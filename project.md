@@ -264,7 +264,7 @@ Next call -> AI closes the loop ("মা, আপনার ওষুধ আজ �
 - Palette (tokens in `src/index.css`): paper `#F3F4EE`, card `#FFFFFF`, ink `#16221B`, moss `#1D3A2E` (primary), marigold `#F4A340` (call/CTA), thread red `#CF523C` (alerts only), sage `#A7C095`, pastel tiles lilac `#EBE5F9`, mint `#DFF0E4`, peach `#FDE7D4`, sky `#E0ECF8`.
 - Type: Onest for Latin, Anek Bangla for Bangla (utility class `bn`). Caregiver scale 12/13/15/17/28, elder scale 15/17/19/24.
 - Signature moments: the voice orb on the call screen (brand mark breathing with a live waveform) and the dark moss hero card on the caregiver home (score + 7-day sparkline + Call / Last call / Voice note).
-- Landing page (v3): a live "hero stage" instead of empty space. Ma's portrait mid-call in the centre with rotating stitched rings, and floating cards that pop in one by one: the AI's Bangla question, Ma's reply, the watch sleep reading, the agent's completed order, and the notification Tanvir gets. Below it: headline, three capability chips (any phone, speaks Bangla, family in loop), and two role buttons.
+- Landing page (v3): a live "hero stage" instead of empty space. the Aalapon voice orb (brand mark + live waveform, badge "মায়ের সাথে কথা চলছে") in the centre with rotating stitched rings; headline and subtitle centred, no দাঁড়ি in the headline, and floating cards that pop in one by one: the AI's Bangla question, Ma's reply, the watch sleep reading, the agent's completed order, and the notification Tanvir gets. Below it: headline, three capability chips (any phone, speaks Bangla, family in loop), and two role buttons.
 - Caregiver home is organised as "Ma's day": hero, wellbeing update, one approval, 2x2 watch tiles with sparklines, today timeline.
 
 ### 9.2 Routes

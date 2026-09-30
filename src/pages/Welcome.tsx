@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Check, HeartHandshake, Languages, Moon, Phone, PhoneCall, Smartphone, Users } from 'lucide-react'
-import { Logo, MaAvatar, Mark } from '../components/brand'
+import { Logo, Mark } from '../components/brand'
 
 /** A floating element on the hero stage: pops in once, then drifts gently. */
 function Float({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
@@ -33,7 +33,7 @@ export default function Welcome() {
         </header>
 
         {/* Hero stage: one morning call, shown as it happens */}
-        <div className="relative mx-auto mt-1 h-[392px] w-full max-w-[380px]">
+        <div className="relative mx-auto mt-8 h-[392px] w-full max-w-[380px]">
           <svg viewBox="0 0 360 360" className="absolute left-1/2 top-[196px] size-[330px] -translate-x-1/2 -translate-y-1/2 animate-spin-slow" aria-hidden>
             <circle cx="180" cy="180" r="170" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" strokeDasharray="4 8" strokeLinecap="round" />
             <circle cx="180" cy="180" r="124" fill="none" stroke="rgba(244,163,64,0.45)" strokeWidth="1.5" strokeDasharray="10 10" strokeLinecap="round" />
@@ -44,11 +44,16 @@ export default function Welcome() {
             <div className="relative">
               <span className="absolute inset-0 rounded-full bg-marigold/40 animate-ring" />
               <span className="absolute inset-0 rounded-full bg-marigold/30 animate-ring [animation-delay:1s]" />
-              <div className="relative rounded-full bg-marigold p-1.5 shadow-[0_20px_60px_-10px_rgba(244,163,64,0.7)]">
-                <MaAvatar size={120} />
+              <div className="relative grid size-[124px] place-items-center rounded-full bg-[#F6F3EA] shadow-[0_20px_60px_-10px_rgba(244,163,64,0.75)] ring-[6px] ring-marigold">
+                <Mark size={62} />
+                <div className="absolute bottom-[22px] flex h-3.5 items-center gap-[2.5px]" aria-hidden>
+                  {[0.2, 0.5, 0.1, 0.7, 0.3].map((d, i) => (
+                    <span key={i} className="h-full w-[2.5px] origin-center rounded-full bg-moss-3 animate-wave" style={{ animationDelay: `${d}s` }} />
+                  ))}
+                </div>
               </div>
-              <span className="absolute -bottom-1 left-1/2 flex h-7 -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-2.5 text-[12px] font-semibold text-moss shadow-lg">
-                <Phone size={12} className="text-moss-3" /> <span className="bn">কথা চলছে</span> <span className="tabular-nums text-ink-faint">02:14</span>
+              <span className="absolute -bottom-3 left-1/2 flex h-7 -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-2.5 text-[12px] font-semibold text-moss shadow-lg">
+                <Phone size={12} className="text-moss-3" /> <span className="bn">মায়ের সাথে কথা চলছে</span> <span className="tabular-nums text-ink-faint">02:14</span>
               </span>
             </div>
           </div>
@@ -105,18 +110,18 @@ export default function Welcome() {
           </Float>
         </div>
 
-        <div className="mt-4 animate-rise [animation-delay:300ms]">
+        <div className="mt-9 text-center animate-rise [animation-delay:300ms]">
           <h1 className="bn text-[38px] font-bold leading-[1.05] tracking-tight">
             প্রতিটি আলাপই
             <br />
-            যত্নের সুযোগ।
+            যত্নের সুযোগ
           </h1>
-          <p className="mt-2.5 text-[15px] leading-relaxed text-white/75">
+          <p className="mx-auto mt-3 max-w-[34ch] text-[15px] leading-relaxed text-white/75">
             An AI that calls your parents daily in Bangla, notices what they need, and gets it done.
           </p>
         </div>
 
-        <div className="mt-3.5 grid grid-cols-3 gap-1.5">
+        <div className="mt-5 grid grid-cols-3 gap-1.5">
           {[
             { icon: <Smartphone size={15} />, t: 'Any phone' },
             { icon: <Languages size={15} />, t: 'Speaks Bangla' },
