@@ -1,8 +1,11 @@
+import type React from 'react'
 import { useState } from 'react'
-import { Info } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { BellRing, Check, Info, Phone, Plus, Send, Stethoscope } from 'lucide-react'
 import { Bars, Card, CareNav, PageTitle, Screen } from '../../components/ui'
 import { MaAvatar } from '../../components/brand'
 import { insights, vitals, wellbeing } from '../../data/mock'
+import { useApp } from '../../state/AppState'
 
 const toneMap = {
   alert: { dot: 'bg-thread', label: 'Check in' },
@@ -12,6 +15,64 @@ const toneMap = {
 
 export default function CareInsights() {
   const [open, setOpen] = useState<string | null>(insights[0].id)
+  const { reminders, questions, patch, toast, addRequest } = useApp()
+  const eveningQ = 'Did you take your evening calcium?'
+  const btn = 'press flex h-10 items-center justify-center gap-1.5 rounded-full px-3.5 text-[13px] font-semibold'
+  const actions: Record<string, React.ReactNode> = {
+    i1: (
+      <>
+        <Link to="/care/call" className={`${btn} bg-moss text-white`}>
+          <Phone size={14} /> Call Ma
+        </Link>
+        <button
+          onClick={() => {
+            const on = reminders.includes('i1')
+            patch((s) => ({ reminders: on ? s.reminders.filter((x) => x !== 'i1') : [...s.reminders, 'i1'] }))
+            toast(on ? 'Reminder removed' : 'We will remind you at 8:00 PM')
+          }}
+          className={`${btn} ${reminders.includes('i1') ? 'bg-sage-soft text-moss-2' : 'bg-paper text-ink'}`}
+        >
+          {reminders.includes('i1') ? <Check size={14} /> : <BellRing size={14} />} {reminders.includes('i1') ? 'Reminder at 8 PM' : 'Remind me at 8 PM'}
+        </button>
+      </>
+    ),
+    i2: (
+      <Link to="/care/book-doctor" className={`${btn} bg-moss text-white`}>
+        <Stethoscope size={14} /> Book a doctor visit
+      </Link>
+    ),
+    i3: questions.includes(eveningQ) ? (
+      <span className={`${btn} bg-sage-soft text-moss-2`}>
+        <Check size={14} /> Evening check added
+      </span>
+    ) : (
+      <button
+        onClick={() => {
+          patch((s) => ({ questions: [...s.questions, eveningQ] }))
+          toast('Aalapon will ask about it every evening')
+        }}
+        className={`${btn} bg-moss text-white`}
+      >
+        <Plus size={14} /> Ask her every evening
+      </button>
+    ),
+    i4: reminders.includes('i4') ? (
+      <span className={`${btn} bg-sage-soft text-moss-2`}>
+        <Check size={14} /> Sent to Nabila
+      </span>
+    ) : (
+      <button
+        onClick={() => {
+          patch((s) => ({ reminders: [...s.reminders, 'i4'] }))
+          addRequest({ kind: 'family', titleEn: 'Asked Nabila to call Ma', titleBn: 'নাবিলা কল করবে', detailEn: 'Tanvir asked Nabila to give Ma a call this week.', source: 'family', status: 'sent', agentEn: 'Family contact' })
+          toast('Nabila got a message to call Ma')
+        }}
+        className={`${btn} bg-moss text-white`}
+      >
+        <Send size={14} /> Ask Nabila to call
+      </button>
+    ),
+  }
   return (
     <Screen className="pb-28">
       <PageTitle title="Insights" sub="Patterns Aalapon noticed across calls and her watch." />
@@ -58,6 +119,7 @@ export default function CareInsights() {
                     ))}
                   </div>
                   {i.actionEn && <p className="mt-2.5 text-[13px] font-semibold text-moss-3">{i.actionEn}</p>}
+                  {actions[i.id] && <div className="mt-3 flex flex-wrap gap-2">{actions[i.id]}</div>}
                 </div>
               )}
             </Card>

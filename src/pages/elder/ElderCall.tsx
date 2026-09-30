@@ -5,6 +5,7 @@ import { VoiceOrb } from '../../components/ui'
 import { MaAvatar, Mark } from '../../components/brand'
 import { callScript } from '../../data/mock'
 import { toBn, useApp } from '../../state/AppState'
+import { useCamera } from '../../lib/media'
 
 type Phase = 'ringing' | 'connecting' | 'live' | 'ended'
 
@@ -21,12 +22,14 @@ function fmt(sec: number) {
 export default function ElderCall() {
   const [params] = useSearchParams()
   const nav = useNavigate()
-  const { addRequest } = useApp()
+  const { addRequest, agentModes, toast, consent } = useApp()
   const [phase, setPhase] = useState<Phase>(params.get('mode') === 'incoming' ? 'ringing' : 'connecting')
   const [turn, setTurn] = useState(0)
   const [secs, setSecs] = useState(0)
   const [muted, setMuted] = useState(false)
   const [video, setVideo] = useState(false)
+  const [speaker, setSpeaker] = useState(false)
+  const cam = useCamera(video && phase === 'live')
   const logged = useRef(false)
 
   useEffect(() => {
@@ -69,13 +72,13 @@ export default function ElderCall() {
         kind: 'medicine',
         titleEn: 'Refill blood pressure medicine',
         titleBn: 'প্রেসারের ওষুধ',
-        detailEn: 'Amlodipine 5 mg, 30 tablets from the partner pharmacy. BDT 210.',
+        detailEn: `Amlodipine 5 mg, 30 tablets from the partner pharmacy. BDT 210.${agentModes.a3 === 'auto' ? ' Ordered automatically.' : ''}`,
         quoteBn: 'ওষুধ প্রায় শেষ হয়ে এসেছে।',
         source: 'call',
-        status: 'approval',
+        status: agentModes.a3 === 'auto' ? 'done' : 'approval',
         agentEn: 'Medicine refill',
       })
-  }, [phase, turn, addRequest])
+  }, [phase, turn, addRequest, agentModes])
 
   const current = callScript[turn]
   const prev = turn > 0 ? callScript[turn - 1] : null
@@ -93,11 +96,11 @@ export default function ElderCall() {
             {phase === 'live' && fmt(secs)}
             {phase === 'ended' && 'কল শেষ'}
           </span>
-          {video && phase === 'live' && <span className="flex h-8 items-center rounded-full bg-white/10 px-3 text-[13px]">ভিডিও চালু, আপনার অনুমতিতে</span>}
+          {speaker && phase === 'live' && <span className="flex h-8 items-center rounded-full bg-white/10 px-3 text-[13px]">স্পিকার চালু</span>}
         </div>
 
         <div className={`flex flex-col items-center ${phase === 'ringing' ? 'pt-14' : 'pt-3'}`}>
-          <VoiceOrb size={phase === 'ringing' ? 230 : phase === 'ended' ? 130 : 170} active={phase !== 'ended'} speaking={phase === 'live' && current.who === 'ai'} />
+          <VoiceOrb size={phase === 'ringing' ? 230 : phase === 'ended' || video ? 130 : 170} active={phase !== 'ended'} speaking={phase === 'live' && current.who === 'ai'} />
           <h1 className="mt-3 text-[30px] font-bold leading-none">আলাপন</h1>
           <p className="mt-2 text-[16px] text-white/65">
             {phase === 'ringing' && 'প্রতিদিনের সকালের কল'}
@@ -106,6 +109,24 @@ export default function ElderCall() {
             {phase === 'ended' && `${fmt(secs)} মিনিট কথা হলো`}
           </p>
         </div>
+
+        {phase === 'live' && muted && (
+          <div className="mt-4 rounded-2xl bg-thread/25 px-3 py-2 text-center text-[14px] ring-1 ring-thread/40">মাইক বন্ধ। আলাপন আপনার কথা শুনতে পাচ্ছে না।</div>
+        )}
+
+        {phase === 'live' && video && (
+          <div className="relative mt-4 overflow-hidden rounded-[20px] bg-black/30 ring-1 ring-white/15">
+            <video ref={cam.videoRef} autoPlay playsInline muted className={`h-36 w-full -scale-x-100 object-cover ${cam.status === 'on' ? '' : 'hidden'}`} />
+            {cam.status !== 'on' && (
+              <div className="grid h-36 place-items-center px-6 text-center text-[15px] text-white/70">
+                {cam.status === 'starting' ? 'ক্যামেরা চালু হচ্ছে...' : 'ক্যামেরা পাওয়া যায়নি। আলাপন শুধু কণ্ঠে কথা চালিয়ে যাবে।'}
+              </div>
+            )}
+            <span className="absolute left-2 top-2 rounded-full bg-black/50 px-2.5 py-1 text-[12px]">
+              {consent.video ? 'ভিডিও চালু, আপনার অনুমতিতে' : 'শুধু আপনি দেখছেন, কিছু রাখা হচ্ছে না'}
+            </span>
+          </div>
+        )}
 
         {phase === 'live' && (
           <button onClick={next} className="mt-5 text-left" aria-label="পরের কথা">
@@ -143,7 +164,12 @@ export default function ElderCall() {
 
         {phase === 'ringing' && (
           <div className="mb-6 grid grid-cols-2 items-end">
-            <CallBtn label="পরে" onClick={() => nav('/elder')} className="size-[72px] bg-thread" icon={<PhoneOff size={28} />} />
+            <CallBtn
+              label="পরে"
+              onClick={() => {
+                toast('ঠিক আছে, আলাপন ৩০ মিনিট পরে আবার কল করবে')
+                nav('/elder')
+              }} className="size-[72px] bg-thread" icon={<PhoneOff size={28} />} />
             <CallBtn label="ধরুন" onClick={() => setPhase('connecting')} className="size-[84px] bg-[#7ee0a1] text-moss" icon={<Phone size={32} />} pulse />
           </div>
         )}
@@ -152,7 +178,7 @@ export default function ElderCall() {
           <div className="mt-5 grid grid-cols-4 gap-2">
             <CallBtn small label={muted ? 'মিউট করা' : 'মিউট'} onClick={() => setMuted(!muted)} className={muted ? 'bg-white text-moss' : 'bg-white/10'} icon={muted ? <MicOff size={22} /> : <Mic size={22} />} />
             <CallBtn small label="ভিডিও" onClick={() => setVideo(!video)} className={video ? 'bg-white text-moss' : 'bg-white/10'} icon={video ? <Video size={22} /> : <VideoOff size={22} />} />
-            <CallBtn small label="স্পিকার" className="bg-white/10" icon={<Volume2 size={22} />} />
+            <CallBtn small label="স্পিকার" onClick={() => setSpeaker(!speaker)} className={speaker ? 'bg-white text-moss' : 'bg-white/10'} icon={<Volume2 size={22} />} />
             <CallBtn small label="শেষ" onClick={() => setPhase('ended')} className="bg-thread" icon={<PhoneOff size={22} />} />
           </div>
         )}

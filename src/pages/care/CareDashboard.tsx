@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { ChevronRight, Droplets, Footprints, HeartPulse, MessageCircle, Moon, Phone, Play, Settings, Sparkles } from 'lucide-react'
 import { Card, CareNav, Pill, Screen, SectionHead, Spark } from '../../components/ui'
 import { MaAvatar } from '../../components/brand'
-import { calls, elder, insights, medicines, vitals, wellbeing } from '../../data/mock'
+import { calls, elder, insights, vitals, wellbeing } from '../../data/mock'
 import { useApp } from '../../state/AppState'
 import { ApprovalCard } from './CareRequests'
 
 export default function CareDashboard() {
-  const { requests, medsTaken } = useApp()
+  const { requests, medsTaken, medicines, callTime } = useApp()
   const waiting = requests.filter((r) => r.status === 'approval')
   const top = insights[0]
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -20,7 +20,7 @@ export default function CareDashboard() {
       sub: medsTaken.includes(m.id) ? `Taken, ${m.purposeEn.toLowerCase()}` : m.purposeEn,
       state: (medsTaken.includes(m.id) ? 'done' : 'later') as 'done' | 'later',
     })),
-    { time: '09:05', title: 'Morning call, 4 min', sub: 'Tired, slept badly, asked for groceries', state: 'done' as const },
+    { time: callTime, title: 'Daily call with Aalapon', sub: 'Tired, slept badly, asked for groceries', state: 'done' as const },
   ].sort((a, b) => a.time.localeCompare(b.time))
   const firstLater = timeline.findIndex((t) => t.state === 'later')
   if (firstLater >= 0) timeline[firstLater].state = 'next'
@@ -59,15 +59,15 @@ export default function CareDashboard() {
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <a href="tel:+8801700000000" className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-marigold text-[14px] font-semibold text-moss">
+          <Link to="/care/call" className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-marigold text-[14px] font-semibold text-moss">
             <Phone size={16} /> Call
-          </a>
+          </Link>
           <Link to={`/care/calls/${calls[0].id}`} className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 text-[14px] font-semibold">
             <Play size={15} /> Last call
           </Link>
-          <button className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 text-[14px] font-semibold">
+          <Link to="/care/voice-note" className="press flex h-11 items-center justify-center gap-1.5 rounded-full bg-white/10 text-[14px] font-semibold">
             <MessageCircle size={16} /> Voice note
-          </button>
+          </Link>
         </div>
       </section>
 

@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { ChevronLeft, House, Inbox, Sparkles, Watch, Workflow } from 'lucide-react'
+import { ChevronLeft, CircleCheck, House, Inbox, Sparkles, Watch, Workflow, X } from 'lucide-react'
 import { useApp } from '../state/AppState'
 import { Mark } from './brand'
 
@@ -166,4 +166,63 @@ export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone
 
 export function IconDot({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <span className={`grid size-9 shrink-0 place-items-center rounded-full ${className}`}>{children}</span>
+}
+
+/** Bottom sheet for quick edits. Closes on backdrop tap or Escape. */
+export function Sheet({ open, title, onClose, children, footer }: { open: boolean; title: string; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center" role="dialog" aria-modal="true" aria-label={title}>
+      <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" />
+      <div className="relative w-full max-w-[440px] animate-rise rounded-t-[28px] bg-card px-4 pt-2.5 shadow-2xl pb-[max(env(safe-area-inset-bottom),16px)]">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line" />
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-[18px] font-semibold">{title}</h2>
+          <button onClick={onClose} aria-label="Close" className="grid size-9 place-items-center rounded-full bg-paper text-ink-soft">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="max-h-[60dvh] overflow-y-auto">{children}</div>
+        {footer && <div className="mt-4">{footer}</div>}
+      </div>
+    </div>
+  )
+}
+
+export function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="mb-3 block">
+      <span className="mb-1.5 block text-[13px] font-medium text-ink-soft">{label}</span>
+      {children}
+    </label>
+  )
+}
+
+export const inputCls = 'h-12 w-full rounded-[14px] bg-paper px-3.5 text-[16px] text-ink outline-none ring-1 ring-line focus:ring-2 focus:ring-moss-3'
+
+export function PrimaryBtn({ children, onClick, disabled, className = '' }: { children: ReactNode; onClick?: () => void; disabled?: boolean; className?: string }) {
+  return (
+    <button onClick={onClick} disabled={disabled} className={`press flex h-12 w-full items-center justify-center gap-2 rounded-full bg-moss text-[15px] font-semibold text-white disabled:opacity-40 ${className}`}>
+      {children}
+    </button>
+  )
+}
+
+export function Toaster() {
+  const { toastMsg } = useApp()
+  if (!toastMsg) return null
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-[max(env(safe-area-inset-top),12px)] z-[60] flex justify-center px-4" role="status" aria-live="polite">
+      <div className="bn animate-rise flex max-w-[400px] items-center gap-2.5 rounded-full bg-ink px-4 py-2.5 text-[14px] font-medium text-white shadow-xl">
+        <CircleCheck size={17} className="shrink-0 text-[#7ee0a1]" />
+        {toastMsg}
+      </div>
+    </div>
+  )
 }

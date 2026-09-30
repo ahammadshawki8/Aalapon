@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, Footprints, HeartPulse, House, Moon, PhoneCall, PhoneIncoming, Pill, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Check, ChevronRight, Footprints, HeartPulse, House, Moon, Pause, PhoneCall, PhoneIncoming, Pill, Play, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
 import { Card, Screen } from '../../components/ui'
 import { MaAvatar, Mark } from '../../components/brand'
-import { elder, medicines, vitals } from '../../data/mock'
-import { toBn, useApp, type CareRequest } from '../../state/AppState'
+import { elder, vitals } from '../../data/mock'
+import { timeToBn, toBn, useApp, type CareRequest, type VoiceNote } from '../../state/AppState'
 
 const needs = [
   { type: 'medicine', bn: 'ওষুধ লাগবে', icon: Pill, bg: 'bg-lilac', ink: 'text-lilac-ink' },
@@ -33,7 +34,7 @@ function greeting() {
 }
 
 export default function ElderHome() {
-  const { medsTaken, toggleMed, requests } = useApp()
+  const { medsTaken, toggleMed, requests, medicines, callTime, voiceNotes } = useApp()
   const now = new Date()
   const next = medicines.find((m) => !medsTaken.includes(m.id))
   const takenCount = medicines.filter((m) => medsTaken.includes(m.id)).length
@@ -62,13 +63,15 @@ export default function ElderHome() {
         </div>
         <div className="relative flex-1">
           <div className="text-[21px] font-bold leading-tight">আলাপনের সাথে কথা বলুন</div>
-          <div className="mt-1 text-[15px] text-white/70">রোজ সকাল ৯টায় আলাপন কল করে</div>
+          <div className="mt-1 text-[15px] text-white/70">প্রতিদিন {timeToBn(callTime)} আলাপন কল করে</div>
         </div>
         <span className="relative grid size-16 shrink-0 place-items-center rounded-full bg-marigold text-moss">
           <span className="absolute inset-0 rounded-full bg-marigold animate-ring" />
           <PhoneCall size={26} className="relative" />
         </span>
       </Link>
+
+      {voiceNotes[0] && <VoiceNoteCard note={voiceNotes[0]} />}
 
       <Card className="mt-3 p-4">
         <div className="flex items-center justify-between">
@@ -134,8 +137,11 @@ export default function ElderHome() {
         <span className="text-[14px] font-medium opacity-80">সবাইকে খবর দিন</span>
       </Link>
 
-      <h2 className="mt-6 mb-2.5 px-1 text-[18px] font-bold">ঘড়ি যা বলছে</h2>
-      <Card className="overflow-hidden">
+      <Link to="/elder/watch" className="mt-6 mb-2.5 flex items-center justify-between px-1">
+        <h2 className="text-[18px] font-bold">ঘড়ি যা বলছে</h2>
+        <span className="flex items-center text-[15px] font-medium text-moss-3">বিস্তারিত <ChevronRight size={18} /></span>
+      </Link>
+      <Link to="/elder/watch" className="press block overflow-hidden rounded-[22px] bg-card shadow-card">
         <div className="grid grid-cols-3 divide-x divide-line py-3.5">
           <Stat icon={<HeartPulse size={18} className="text-thread" />} value={toBn(vitals.heartRate)} label="হৃদস্পন্দন" />
           <Stat icon={<Moon size={18} className="text-lilac-ink" />} value={`${toBn(sleepH)}:${toBn(String(sleepM).padStart(2, '0'))}`} label="ঘণ্টা ঘুম" />
@@ -145,11 +151,14 @@ export default function ElderHome() {
           <Mark size={20} />
           <span>কাল রাতে ঘুম কম হয়েছে। আজ দুপুরে একটু বিশ্রাম নিন।</span>
         </div>
-      </Card>
+      </Link>
 
       {requests.length > 0 && (
         <>
-          <h2 className="mt-6 mb-2.5 px-1 text-[18px] font-bold">আপনার অনুরোধ</h2>
+          <Link to="/elder/requests" className="mt-6 mb-2.5 flex items-center justify-between px-1">
+            <h2 className="text-[18px] font-bold">আপনার অনুরোধ</h2>
+            <span className="flex items-center text-[15px] font-medium text-moss-3">সব দেখুন <ChevronRight size={18} /></span>
+          </Link>
           <Card className="divide-y divide-line">
             {requests.slice(0, 3).map((r) => (
               <div key={r.id} className="flex items-center gap-3 px-4 py-3">
@@ -175,6 +184,74 @@ function Stat({ icon, value, label }: { icon: ReactNode; value: string; label: s
       {icon}
       <span className="text-[22px] font-bold leading-none">{value}</span>
       <span className="text-[13px] text-ink-soft">{label}</span>
+    </div>
+  )
+}
+
+function VoiceNoteCard({ note }: { note: VoiceNote }) {
+  const { patch } = useApp()
+  const [playing, setPlaying] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const audio = useRef<HTMLAudioElement | null>(null)
+  const timer = useRef<number | undefined>(undefined)
+
+  useEffect(() => () => {
+    window.clearInterval(timer.current)
+    audio.current?.pause()
+  }, [])
+
+  const finish = () => {
+    window.clearInterval(timer.current)
+    setPlaying(false)
+    setProgress(1)
+    patch((s) => ({ voiceNotes: s.voiceNotes.map((v) => (v.id === note.id ? { ...v, played: true } : v)) }))
+  }
+
+  const toggle = () => {
+    if (playing) {
+      audio.current?.pause()
+      window.clearInterval(timer.current)
+      setPlaying(false)
+      return
+    }
+    setPlaying(true)
+    const startAt = progress >= 1 ? 0 : progress
+    if (note.dataUrl) {
+      if (!audio.current) {
+        audio.current = new Audio(note.dataUrl)
+        audio.current.onended = finish
+        audio.current.ontimeupdate = () => {
+          const a = audio.current!
+          if (a.duration && isFinite(a.duration)) setProgress(a.currentTime / a.duration)
+        }
+      }
+      if (startAt === 0) audio.current.currentTime = 0
+      audio.current.play().catch(() => simulate(startAt))
+    } else simulate(startAt)
+  }
+
+  const simulate = (from: number) => {
+    const total = Math.max(1, note.secs) * 1000
+    const t0 = Date.now() - from * total
+    timer.current = window.setInterval(() => {
+      const p = (Date.now() - t0) / total
+      if (p >= 1) finish()
+      else setProgress(p)
+    }, 100)
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-3 rounded-[22px] bg-marigold-soft p-3.5">
+      <button onClick={toggle} aria-label={playing ? 'থামান' : 'শুনুন'} className="press grid size-14 shrink-0 place-items-center rounded-full bg-moss text-white">
+        {playing ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-0.5" />}
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="text-[17px] font-bold leading-tight">তানভীরের ভয়েস মেসেজ</div>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/80">
+          <div className="h-full rounded-full bg-marigold-deep transition-[width] duration-100" style={{ width: `${Math.round(progress * 100)}%` }} />
+        </div>
+        <div className="mt-1 text-[14px] text-ink-soft">{note.played ? 'শোনা হয়েছে' : 'নতুন'}, {toBn(Math.max(1, note.secs))} সেকেন্ড</div>
+      </div>
     </div>
   )
 }

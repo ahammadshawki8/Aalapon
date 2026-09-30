@@ -2,8 +2,10 @@ import type { ReactNode } from 'react'
 import { Droplets, Footprints, HeartPulse, Info, Moon, Watch } from 'lucide-react'
 import { Bars, Card, CareNav, PageTitle, Pill, Screen, Spark } from '../../components/ui'
 import { vitals } from '../../data/mock'
+import { useApp } from '../../state/AppState'
 
 export default function CareHealth() {
+  const { consent } = useApp()
   return (
     <Screen className="pb-28">
       <PageTitle title="Health" sub="From Ma's watch. Aalapon asks about changes on her next call." />
@@ -16,7 +18,7 @@ export default function CareHealth() {
           <div className="text-[15px] font-semibold">Ma's watch</div>
           <div className="text-[12.5px] text-ink-soft">Health Connect, {vitals.syncedEn.toLowerCase()}</div>
         </div>
-        <Pill tone="good">Sharing on</Pill>
+        <Pill tone={consent.watch ? 'good' : 'alert'}>{consent.watch ? 'Sharing on' : 'Paused by Ma'}</Pill>
       </Card>
 
       <Metric icon={<Moon size={16} />} tint="bg-lilac text-lilac-ink" label="Sleep, last night" value={`${vitals.sleepHours}`} unit="hours" note="Under 5 hours on 3 of the last 4 nights" flag>

@@ -280,7 +280,14 @@ Next call -> AI closes the loop ("মা, আপনার ওষুধ আজ �
 | `/care/requests` | Requests, approvals, agent actions |
 | `/care/agents` | Agent registry and new-agent requests |
 | `/care/health` | Watch vitals |
-| `/care/settings` | Schedule, medicines, devices, consent |
+| `/care/settings` | Care plan: call time, phone, questions, medicines, consent, family (all editable in bottom sheets) |
+| `/care/call` | Family calls Ma (ringing, live timer, mute, speaker, end, follow-up) |
+| `/care/voice-note` | Record a voice note (real mic via MediaRecorder, simulated fallback), send, see if Ma listened |
+| `/care/book-doctor` | Pick doctor, slot, reason; booking lands in Requests |
+| `/elder/requests` | All of Ma's requests with Bangla status and source |
+| `/elder/watch` | Watch readings in plain Bangla, 7-day sleep, sharing switch |
+
+Every button leads to a working frontend flow (no placeholders). Cross-portal loops in the demo: care plan medicines and call time show up in Ma's app; voice notes play on Ma's home and report "Ma listened"; agent mode "Runs on its own" for medicine refill or doctor makes those requests complete without approval; Ma's watch sharing switch pauses the family Health screen; insight actions (call Ma, reminder, book doctor, add evening question, ask Nabila) all act. Media helpers are in `src/lib/media.ts` (`useRecorder`, `useCamera`). Bottom sheet, toast and form primitives are in `src/components/ui.tsx`.
 
 Mock data lives in `src/data/`. Shared state (requests raised by the elder show up in the caregiver inbox) uses React context persisted to localStorage, so the video demo can show the full loop on two phones or two tabs.
 
@@ -363,6 +370,7 @@ Commands: `npm install`, `npm run dev`, `npm run build`, `npm run preview`.
 - Demo tips for the video: open `#/elder/call?mode=incoming` for the incoming AI call (tap the caption to skip to the next line). Finishing the call adds a grocery order and a medicine refill approval to the caregiver's Requests. "Reset demo data" is at the bottom of the Requests screen.
 - 2026-09-30 (v2): UI redesign pass: new brand mark and app icons, hand-drawn avatar, compact grouped layouts, labelled bottom nav, sparklines, timeline, accordion insights. Duplicate requests are deduped by title.
 - 2026-09-30 (v3): Landing page rebuilt as an animated hero stage that shows the whole product loop in one screen.
+- 2026-09-30 (v4): All buttons wired to real frontend flows. New pages: /care/call, /care/voice-note, /care/book-doctor, /elder/requests, /elder/watch. Care plan fully editable. Elder need screen has a voice listening flow. Call screen has working mute, speaker, and camera preview. State key is `aalapon-demo-v3`.
 - Next: deploy, real-device check, then Tier 1.
 
 ## 14. Session log

@@ -1,7 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { agents, caregivers as seedFamily, elder, medicines as seedMeds, type Medicine } from '../data/mock'
 
 export type RequestStatus = 'done' | 'approval' | 'admin' | 'declined' | 'sent'
-export type RequestSource = 'call' | 'portal'
+export type RequestSource = 'call' | 'portal' | 'family'
 
 export type CareRequest = {
   id: string
@@ -16,23 +17,48 @@ export type CareRequest = {
   at: number
 }
 
+export type VoiceNote = { id: string; from: string; at: number; secs: number; dataUrl?: string; played: boolean }
+export type FamilyMember = { id: string; nameEn: string; nameBn: string; relation: string; place: string; phone?: string }
+export type Consent = { calls: boolean; recordings: boolean; watch: boolean; video: boolean }
+
 type State = {
   requests: CareRequest[]
   medsTaken: string[]
+  medicines: Medicine[]
+  callTime: string
+  elderPhone: string
+  questions: string[]
+  consent: Consent
+  agentModes: Record<string, 'auto' | 'approve'>
+  voiceNotes: VoiceNote[]
+  reminders: string[]
+  family: FamilyMember[]
 }
 
 type Ctx = State & {
   addRequest: (r: Omit<CareRequest, 'id' | 'at'>) => void
   setStatus: (id: string, status: RequestStatus) => void
   toggleMed: (id: string) => void
+  patch: (fn: (s: State) => Partial<State>) => void
   reset: () => void
+  toast: (msg: string) => void
+  toastMsg: string | null
 }
 
-const KEY = 'aalapon-demo-v2'
+const KEY = 'aalapon-demo-v3'
 const now = Date.now()
 
 const seed: State = {
   medsTaken: ['m1'],
+  medicines: seedMeds,
+  callTime: '09:00',
+  elderPhone: elder.phone,
+  questions: ['Did you take your medicine?', 'How did you sleep?', 'Have you eaten lunch?', 'Any pain today?'],
+  consent: { calls: true, recordings: true, watch: true, video: false },
+  agentModes: Object.fromEntries(agents.map((a) => [a.id, a.autonomy])),
+  voiceNotes: [],
+  reminders: [],
+  family: seedFamily,
   requests: [
     {
       id: 'r1',
@@ -64,7 +90,7 @@ const seed: State = {
 function load(): State {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return JSON.parse(raw) as State
+    if (raw) return { ...seed, ...(JSON.parse(raw) as Partial<State>) }
   } catch {
     /* storage unavailable */
   }
@@ -75,12 +101,14 @@ const AppCtx = createContext<Ctx | null>(null)
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>(load)
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const toastTimer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state))
     } catch {
-      /* storage unavailable */
+      /* storage full or unavailable: the demo keeps working in memory */
     }
   }, [state])
 
@@ -88,7 +116,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key === KEY && e.newValue) {
         try {
-          setState(JSON.parse(e.newValue) as State)
+          setState({ ...seed, ...(JSON.parse(e.newValue) as Partial<State>) })
         } catch {
           /* ignore */
         }
@@ -116,9 +144,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const patch = useCallback((fn: (s: State) => Partial<State>) => setState((s) => ({ ...s, ...fn(s) })), [])
+
+  const toast = useCallback((msg: string) => {
+    setToastMsg(msg)
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToastMsg(null), 2800)
+  }, [])
+
   const reset = useCallback(() => setState(seed), [])
 
-  const value = useMemo(() => ({ ...state, addRequest, setStatus, toggleMed, reset }), [state, addRequest, setStatus, toggleMed, reset])
+  const value = useMemo(
+    () => ({ ...state, addRequest, setStatus, toggleMed, patch, reset, toast, toastMsg }),
+    [state, addRequest, setStatus, toggleMed, patch, reset, toast, toastMsg],
+  )
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>
 }
@@ -143,4 +182,29 @@ export function timeAgo(at: number) {
 const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯']
 export function toBn(n: number | string) {
   return String(n).replace(/[0-9]/g, (d) => bnDigits[Number(d)])
+}
+
+export function timeAgoBn(at: number) {
+  const m = Math.round((Date.now() - at) / 60000)
+  if (m < 1) return 'এইমাত্র'
+  if (m < 60) return `${toBn(m)} মিনিট আগে`
+  const h = Math.round(m / 60)
+  if (h < 24) return `${toBn(h)} ঘণ্টা আগে`
+  const d = Math.round(h / 24)
+  return d === 1 ? 'গতকাল' : `${toBn(d)} দিন আগে`
+}
+
+/** "14:30" -> "দুপুর ২:৩০", "09:00" -> "সকাল ৯টা" */
+export function timeToBn(t: string) {
+  const [hh, mm] = t.split(':').map(Number)
+  const period = hh >= 4 && hh < 12 ? 'সকাল' : hh >= 12 && hh < 16 ? 'দুপুর' : hh >= 16 && hh < 18 ? 'বিকাল' : hh >= 18 && hh < 20 ? 'সন্ধ্যা' : 'রাত'
+  const h12 = hh % 12 === 0 ? 12 : hh % 12
+  return mm ? `${period} ${toBn(h12)}:${toBn(String(mm).padStart(2, '0'))}` : `${period} ${toBn(h12)}টা`
+}
+
+/** "14:30" -> "2:30 PM" */
+export function timeToEn(t: string) {
+  const [hh, mm] = t.split(':').map(Number)
+  const h12 = hh % 12 === 0 ? 12 : hh % 12
+  return `${h12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`
 }

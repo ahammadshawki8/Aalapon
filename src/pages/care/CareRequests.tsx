@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Phone, Pill as PillIcon, ShoppingBasket, Siren, Smartphone, Stethoscope, UserRound, Zap, X } from 'lucide-react'
+import { Check, Phone, Pill as PillIcon, ShoppingBasket, Siren, Smartphone, Stethoscope, UserRound, Users, Zap, X } from 'lucide-react'
 import { Card, CareNav, PageTitle, Pill, Screen } from '../../components/ui'
 import { timeAgo, useApp, type CareRequest } from '../../state/AppState'
 
@@ -24,8 +24,8 @@ const kindTint = {
 function Meta({ r }: { r: CareRequest }) {
   return (
     <span className="inline-flex items-center gap-1 text-[12px] text-ink-faint">
-      {r.source === 'call' ? <Phone size={11} /> : <Smartphone size={11} />}
-      {r.source === 'call' ? 'On the call' : 'From her app'}, {timeAgo(r.at).toLowerCase()}
+      {r.source === 'call' ? <Phone size={11} /> : r.source === 'family' ? <Users size={11} /> : <Smartphone size={11} />}
+      {r.source === 'call' ? 'On the call' : r.source === 'family' ? 'By family' : 'From her app'}, {timeAgo(r.at).toLowerCase()}
     </span>
   )
 }

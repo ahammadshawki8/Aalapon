@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { Bell, CircleDashed, Pill as PillIcon, ShieldCheck, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
 import { Card, CareNav, PageTitle, Screen } from '../../components/ui'
-import { agents, newAgentRequests, type AgentDef } from '../../data/mock'
+import { agents, newAgentRequests } from '../../data/mock'
+import { useApp } from '../../state/AppState'
 
 const icons = { phone: UserRound, basket: ShoppingBasket, pill: PillIcon, doctor: Stethoscope, bell: Bell, alert: Siren }
 const tints = { phone: 'bg-mint text-moss-2', basket: 'bg-peach text-marigold-deep', pill: 'bg-lilac text-lilac-ink', doctor: 'bg-sky text-sky-ink', bell: 'bg-sage-soft text-moss-2', alert: 'bg-thread-soft text-thread' }
@@ -13,7 +13,7 @@ const flow = [
 ]
 
 export default function CareAgents() {
-  const [modes, setModes] = useState<Record<string, AgentDef['autonomy']>>(Object.fromEntries(agents.map((a) => [a.id, a.autonomy])))
+  const { agentModes: modes, patch, toast } = useApp()
 
   return (
     <Screen className="pb-28">
@@ -53,7 +53,10 @@ export default function CareAgents() {
                           key={m}
                           role="radio"
                           aria-checked={mode === m}
-                          onClick={() => setModes({ ...modes, [a.id]: m })}
+                          onClick={() => {
+                            patch((s) => ({ agentModes: { ...s.agentModes, [a.id]: m } }))
+                            toast(`${a.nameEn}: ${m === 'auto' ? 'runs on its own' : 'asks you first'}`)
+                          }}
                           className={`h-8 rounded-full px-3 text-[12.5px] font-medium transition ${mode === m ? 'bg-white text-ink shadow-card' : 'text-ink-faint'}`}
                         >
                           {m === 'auto' ? 'Runs on its own' : 'Ask me first'}
