@@ -28,7 +28,7 @@ type Ctx = State & {
   reset: () => void
 }
 
-const KEY = 'aalapon-demo-v1'
+const KEY = 'aalapon-demo-v2'
 const now = Date.now()
 
 const seed: State = {
@@ -101,7 +101,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const addRequest = useCallback((r: Omit<CareRequest, 'id' | 'at'>) => {
     setState((s) => ({
       ...s,
-      requests: [{ ...r, id: `r${Date.now()}${Math.round(Math.random() * 999)}`, at: Date.now() }, ...s.requests],
+      requests: [{ ...r, id: `r${Date.now()}${Math.round(Math.random() * 999)}`, at: Date.now() }, ...s.requests.filter((x) => x.titleEn !== r.titleEn)],
     }))
   }, [])
 

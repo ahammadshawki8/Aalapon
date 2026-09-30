@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Bot, House, Inbox, Lightbulb, Watch } from 'lucide-react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { ChevronLeft, House, Inbox, Sparkles, Watch, Workflow } from 'lucide-react'
 import { useApp } from '../state/AppState'
+import { Mark } from './brand'
 
-export function Screen({ children, className = '', tone = 'paper' }: { children: ReactNode; className?: string; tone?: 'paper' | 'moss' }) {
+export function Screen({ children, className = '', dark = false }: { children: ReactNode; className?: string; dark?: boolean }) {
   return (
-    <div className={tone === 'moss' ? 'bg-moss min-h-dvh' : 'min-h-dvh'}>
-      <div className={`mx-auto w-full max-w-[480px] min-h-dvh px-4 pt-[max(env(safe-area-inset-top),16px)] ${className}`}>{children}</div>
+    <div className={dark ? 'min-h-dvh bg-moss text-white' : 'min-h-dvh'}>
+      <div className={`mx-auto w-full max-w-[440px] min-h-dvh px-4 pt-[max(env(safe-area-inset-top),12px)] ${className}`}>{children}</div>
     </div>
   )
 }
@@ -14,68 +15,74 @@ export function Screen({ children, className = '', tone = 'paper' }: { children:
 export function BackBar({ title, to, right }: { title?: string; to?: string; right?: ReactNode }) {
   const nav = useNavigate()
   return (
-    <div className="flex items-center gap-3 py-2">
-      <button
-        aria-label="Back"
-        onClick={() => (to ? nav(to) : nav(-1))}
-        className="grid size-11 place-items-center rounded-full border border-line bg-card text-ink active:scale-95 transition"
-      >
-        <ArrowLeft size={20} />
+    <div className="sticky top-0 z-20 -mx-4 flex h-14 items-center gap-2 bg-paper/85 px-4 backdrop-blur-md">
+      <button aria-label="Back" onClick={() => (to ? nav(to) : nav(-1))} className="press -ml-1.5 grid size-11 place-items-center rounded-full text-ink hover:bg-black/5">
+        <ChevronLeft size={24} />
       </button>
-      {title && <h1 className="flex-1 text-lg font-semibold">{title}</h1>}
+      {title && <h1 className="flex-1 truncate text-[17px] font-semibold">{title}</h1>}
       {right}
     </div>
   )
 }
 
-/** Signature element: concentric running-stitch rings, like a nakshi kantha motif. */
-export function StitchOrb({ size = 220, active = false, speaking = false }: { size?: number; active?: boolean; speaking?: boolean }) {
+export function PageTitle({ title, sub, right }: { title: string; sub?: string; right?: ReactNode }) {
   return (
-    <div className="relative grid place-items-center" style={{ width: size, height: size }} aria-hidden>
-      {active && (
-        <>
-          <span className="absolute inset-[18%] rounded-full bg-marigold/40 animate-ring" />
-          <span className="absolute inset-[18%] rounded-full bg-marigold/30 animate-ring [animation-delay:0.8s]" />
-        </>
-      )}
-      <svg viewBox="0 0 200 200" className={`absolute inset-0 ${active ? 'animate-spin-slow' : ''}`}>
-        <circle cx="100" cy="100" r="94" fill="none" stroke="currentColor" strokeOpacity="0.35" strokeWidth="2" strokeDasharray="6 7" strokeLinecap="round" />
-        <circle cx="100" cy="100" r="78" fill="none" stroke="#F2A33A" strokeWidth="2.5" strokeDasharray="10 8" strokeLinecap="round" />
-        <circle cx="100" cy="100" r="62" fill="none" stroke="currentColor" strokeOpacity="0.5" strokeWidth="2" strokeDasharray="3 6" strokeLinecap="round" />
-      </svg>
-      <div
-        className={`relative rounded-full bg-marigold shadow-[0_0_60px_rgba(242,163,58,0.55)] transition-transform duration-300 ${speaking ? 'animate-breathe' : ''}`}
-        style={{ width: size * 0.42, height: size * 0.42 }}
-      >
-        <svg viewBox="0 0 100 100" className="absolute inset-0 text-moss">
-          <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeOpacity="0.45" strokeWidth="2.5" strokeDasharray="4 5" strokeLinecap="round" />
-        </svg>
+    <header className="flex items-end justify-between gap-3 pt-3 pb-4">
+      <div>
+        <h1 className="text-[28px] font-semibold leading-none tracking-tight">{title}</h1>
+        {sub && <p className="mt-2 text-[14px] leading-snug text-ink-soft">{sub}</p>}
       </div>
+      {right}
+    </header>
+  )
+}
+
+export function SectionHead({ title, action, to }: { title: string; action?: string; to?: string }) {
+  return (
+    <div className="mb-2 mt-6 flex items-baseline justify-between px-1">
+      <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+      {action && to && (
+        <Link to={to} className="text-[13px] font-medium text-moss-3">
+          {action}
+        </Link>
+      )}
     </div>
   )
 }
 
-export function Logo({ light = false }: { light?: boolean }) {
+export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <div className={`rounded-[22px] bg-card shadow-card ${className}`}>{children}</div>
+}
+
+/** Voice presence on the call screen: the brand mark breathing inside soft rings, with a live waveform. */
+export function VoiceOrb({ size = 200, active = false, speaking = false }: { size?: number; active?: boolean; speaking?: boolean }) {
   return (
-    <div className="flex items-center gap-2">
-      <svg viewBox="0 0 64 64" className="size-9" aria-hidden>
-        <rect width="64" height="64" rx="18" fill={light ? '#FBFBF6' : '#1F3A2E'} />
-        <circle cx="32" cy="32" r="18" fill="none" stroke="#F2A33A" strokeWidth="3" strokeDasharray="5 4" strokeLinecap="round" />
-        <circle cx="32" cy="32" r="9" fill="#F2A33A" />
-      </svg>
-      <div className="leading-none">
-        <div className={`text-xl font-bold ${light ? 'text-card' : 'text-moss'}`}>আলাপন</div>
-        <div className={`text-[11px] font-medium ${light ? 'text-card/70' : 'text-ink-soft'}`}>Aalapon</div>
+    <div className="relative grid place-items-center" style={{ width: size, height: size }} aria-hidden>
+      {active && (
+        <>
+          <span className="absolute inset-[22%] rounded-full bg-marigold/25 animate-ring" />
+          <span className="absolute inset-[22%] rounded-full bg-marigold/20 animate-ring [animation-delay:1s]" />
+        </>
+      )}
+      <span className="absolute inset-[6%] rounded-full bg-white/[0.04] ring-1 ring-white/10" />
+      <span className="absolute inset-[18%] rounded-full bg-white/[0.06] ring-1 ring-white/10" />
+      <div className={`relative grid place-items-center rounded-full bg-[#F6F3EA] shadow-[0_0_80px_rgba(244,163,64,0.35)] ${speaking ? 'animate-breathe' : ''}`} style={{ width: size * 0.46, height: size * 0.46 }}>
+        <Mark size={size * 0.28} />
+      </div>
+      <div className={`absolute bottom-[4%] flex h-6 items-center gap-[3px] transition-opacity duration-300 ${speaking ? 'opacity-100' : 'opacity-0'}`}>
+        {[0.2, 0.5, 0.1, 0.7, 0.3, 0.6, 0.15].map((d, i) => (
+          <span key={i} className="h-full w-[3px] origin-center rounded-full bg-marigold animate-wave" style={{ animationDelay: `${d}s` }} />
+        ))}
       </div>
     </div>
   )
 }
 
 const careTabs = [
-  { to: '/care', label: 'Home', icon: House, end: true },
-  { to: '/care/insights', label: 'Insights', icon: Lightbulb },
+  { to: '/care', label: 'Today', icon: House, end: true },
+  { to: '/care/insights', label: 'Insights', icon: Sparkles },
   { to: '/care/requests', label: 'Requests', icon: Inbox },
-  { to: '/care/agents', label: 'Agents', icon: Bot },
+  { to: '/care/agents', label: 'Agents', icon: Workflow },
   { to: '/care/health', label: 'Health', icon: Watch },
 ]
 
@@ -83,96 +90,80 @@ export function CareNav() {
   const { requests } = useApp()
   const pending = requests.filter((r) => r.status === 'approval').length
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 pb-safe">
-      <div className="mx-auto max-w-[480px] px-4 pb-3">
-        <div className="flex items-center justify-between rounded-full bg-card/95 p-1.5 shadow-[0_10px_30px_-10px_rgba(31,58,46,0.35)] ring-1 ring-line backdrop-blur">
-          {careTabs.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `relative flex h-12 flex-1 items-center justify-center gap-1.5 rounded-full text-sm font-medium transition ${
-                  isActive ? 'bg-moss text-card flex-[1.6]' : 'text-ink-soft'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <Icon size={20} strokeWidth={2} />
-                  {isActive && <span>{label}</span>}
-                  {!isActive && <span className="sr-only">{label}</span>}
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line/70 bg-white/90 backdrop-blur-xl pb-safe">
+      <div className="mx-auto flex max-w-[440px] px-2">
+        {careTabs.map(({ to, label, icon: Icon, end }) => (
+          <NavLink key={to} to={to} end={end} className="press flex h-[60px] flex-1 flex-col items-center justify-center gap-1">
+            {({ isActive }) => (
+              <>
+                <span className={`relative grid h-7 w-12 place-items-center rounded-full transition-colors ${isActive ? 'bg-moss text-white' : 'text-ink-faint'}`}>
+                  <Icon size={18} strokeWidth={isActive ? 2.2 : 1.9} />
                   {label === 'Requests' && pending > 0 && (
-                    <span className="absolute right-2 top-1.5 grid size-5 place-items-center rounded-full bg-thread text-[11px] font-semibold text-card">{pending}</span>
+                    <span className="absolute -right-0.5 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-thread px-1 text-[10px] font-bold text-white ring-2 ring-white">{pending}</span>
                   )}
-                </>
-              )}
-            </NavLink>
-          ))}
-        </div>
+                </span>
+                <span className={`text-[11px] ${isActive ? 'font-semibold text-ink' : 'font-medium text-ink-faint'}`}>{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
       </div>
     </nav>
   )
 }
 
-export function Bars({ values, max, highlight, labels, color = 'bg-sage', warnBelow }: { values: number[]; max: number; highlight?: number; labels?: string[]; color?: string; warnBelow?: number }) {
+export function Spark({ values, w = 72, h = 24, color = '#F4A340', fill = true }: { values: number[]; w?: number; h?: number; color?: string; fill?: boolean }) {
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const span = max - min || 1
+  const pts = values.map((v, i) => [(i / (values.length - 1)) * w, h - 3 - ((v - min) / span) * (h - 6)])
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')
+  const last = pts[pts.length - 1]
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden className="overflow-visible">
+      {fill && <path d={`${d} L${w} ${h} L0 ${h} Z`} fill={color} opacity="0.14" />}
+      <path d={d} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r="2.6" fill={color} stroke="white" strokeWidth="1.2" />
+    </svg>
+  )
+}
+
+export function Bars({ values, max, labels, color = '#A7C095', warnBelow, warnColor = '#CF523C', unit = '' }: { values: number[]; max: number; labels: string[]; color?: string; warnBelow?: number; warnColor?: string; unit?: string }) {
+  const last = values.length - 1
   return (
     <div>
-      <div className="flex h-28 items-end gap-2">
+      <div className="flex h-24 items-end gap-1.5">
         {values.map((v, i) => {
           const warn = warnBelow !== undefined && v < warnBelow
           return (
-            <div key={i} className="flex flex-1 flex-col items-center justify-end gap-1 h-full">
-              <span className={`text-[11px] ${i === highlight ? 'font-semibold text-ink' : 'text-ink-soft'}`}>{v}</span>
-              <div
-                className={`w-full rounded-full ${warn ? 'bg-thread/80' : color} ${i === highlight ? 'ring-2 ring-moss ring-offset-2 ring-offset-card' : ''}`}
-                style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
-              />
+            <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
+              {i === last && <span className="text-[11px] font-semibold text-ink">{v}{unit}</span>}
+              <div className="w-full max-w-7 rounded-[7px]" style={{ height: `${Math.max(6, (v / max) * 100)}%`, background: warn ? warnColor : color, opacity: i === last ? 1 : 0.55 }} />
             </div>
           )
         })}
       </div>
-      {labels && (
-        <div className="mt-2 flex gap-2">
-          {labels.map((l, i) => (
-            <span key={i} className="flex-1 text-center text-[11px] text-ink-soft">{l}</span>
-          ))}
-        </div>
-      )}
+      <div className="mt-1.5 flex gap-1.5">
+        {labels.map((l, i) => (
+          <span key={i} className={`flex-1 text-center text-[10px] ${i === last ? 'font-semibold text-ink' : 'text-ink-faint'}`}>{l}</span>
+        ))}
+      </div>
     </div>
   )
 }
 
-export function Ring({ value, size = 132, stroke = 12, children }: { value: number; size?: number; stroke?: number; children?: ReactNode }) {
-  const r = (size - stroke) / 2
-  const c = 2 * Math.PI * r
-  return (
-    <div className="relative grid place-items-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#DFE8D3" strokeWidth={stroke} />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke="#F2A33A"
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={`${(value / 100) * c} ${c}`}
-        />
-      </svg>
-      <div className="absolute inset-0 grid place-items-center text-center">{children}</div>
-    </div>
-  )
-}
-
-export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'auto' | 'approve' | 'alert' | 'good' }) {
+export function Pill({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'auto' | 'approve' | 'alert' | 'good' | 'dark' }) {
   const tones = {
     neutral: 'bg-paper text-ink-soft',
-    auto: 'bg-mint text-moss',
-    approve: 'bg-marigold-soft text-[#8a5410]',
+    auto: 'bg-mint text-moss-2',
+    approve: 'bg-marigold-soft text-marigold-deep',
     alert: 'bg-thread-soft text-thread',
-    good: 'bg-sage-soft text-moss',
+    good: 'bg-sage-soft text-moss-2',
+    dark: 'bg-white/12 text-white',
   }
-  return <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}>{children}</span>
+  return <span className={`inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11.5px] font-semibold ${tones[tone]}`}>{children}</span>
+}
+
+export function IconDot({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return <span className={`grid size-9 shrink-0 place-items-center rounded-full ${className}`}>{children}</span>
 }

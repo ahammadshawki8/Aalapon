@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
-import { Phone, Video } from 'lucide-react'
-import { BackBar, CareNav, Pill, Screen } from '../../components/ui'
+import { ChevronRight, Phone, Video } from 'lucide-react'
+import { BackBar, Card, CareNav, Screen } from '../../components/ui'
+import { MaAvatar, Mark } from '../../components/brand'
 import { callScript, calls } from '../../data/mock'
 import { MoodDot } from './CareDashboard'
 
@@ -8,26 +9,27 @@ export function CareCalls() {
   return (
     <Screen className="pb-28">
       <BackBar title="Call history" to="/care" />
-      <p className="text-sm text-ink-soft">Aalapon calls Ma every morning at 9:00 on her regular phone.</p>
-      <div className="mt-4 space-y-2.5">
+      <p className="px-1 pb-3 text-[13px] text-ink-soft">Aalapon calls Ma at 9:00 every morning on her regular phone.</p>
+      <Card className="divide-y divide-line overflow-hidden">
         {calls.map((c) => (
-          <Link key={c.id} to={`/care/calls/${c.id}`} className="flex items-start gap-3 rounded-3xl bg-card p-4 ring-1 ring-line active:scale-[0.99] transition">
+          <Link key={c.id} to={`/care/calls/${c.id}`} className="flex items-start gap-3 px-4 py-3.5 active:bg-paper">
             <MoodDot mood={c.mood} />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="font-semibold">{c.dayEn}</span>
-                <span className="text-xs text-ink-soft">{c.timeEn}, {c.duration}</span>
+                <span className="text-[15px] font-semibold">{c.dayEn}</span>
+                <span className="text-[12px] tabular-nums text-ink-faint">{c.timeEn}, {c.duration}</span>
               </div>
-              <p className="mt-0.5 text-sm leading-relaxed text-ink-soft">{c.summaryEn}</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-ink-soft">{c.summaryEn}</p>
+              <div className="mt-1.5 flex flex-wrap gap-1">
                 {c.tags.map((t) => (
-                  <Pill key={t}>{t}</Pill>
+                  <span key={t} className="rounded-full bg-paper px-2 py-0.5 text-[11px] font-medium text-ink-soft">{t}</span>
                 ))}
               </div>
             </div>
+            <ChevronRight size={18} className="mt-0.5 text-ink-faint" />
           </Link>
         ))}
-      </div>
+      </Card>
       <CareNav />
     </Screen>
   )
@@ -41,37 +43,36 @@ export function CareCallDetail() {
   return (
     <Screen className="pb-28">
       <BackBar title={`${c.dayEn}, ${c.timeEn}`} to="/care/calls" />
-      <section className="mt-2 rounded-4xl bg-moss p-5 text-card">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5 text-sm text-card/75">
-            {c.channelEn === 'Video call' ? <Video size={16} /> : <Phone size={16} />} {c.channelEn}, {c.duration}
+      <section className="rounded-[24px] bg-moss p-4 text-white">
+        <div className="flex items-center justify-between text-[12.5px] text-white/65">
+          <span className="flex items-center gap-1.5">
+            {c.channelEn === 'Video call' ? <Video size={14} /> : <Phone size={14} />} {c.channelEn}, {c.duration}
           </span>
-          <span className="rounded-full bg-card/15 px-2.5 py-1 text-xs">Mood: {c.moodEn}</span>
+          <span className="rounded-full bg-white/10 px-2.5 py-1">Mood: {c.moodEn}</span>
         </div>
-        <h2 className="mt-3 text-sm text-card/70">Summary</h2>
-        <p className="mt-1 text-lg leading-snug">{c.summaryEn}</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <p className="mt-3 text-[17px] font-medium leading-snug">{c.summaryEn}</p>
+        <div className="mt-3 flex flex-wrap gap-1">
           {c.tags.map((t) => (
-            <span key={t} className="rounded-full bg-marigold px-2.5 py-1 text-xs font-medium text-moss">{t}</span>
+            <span key={t} className="rounded-full bg-marigold px-2.5 py-1 text-[11.5px] font-semibold text-moss">{t}</span>
           ))}
         </div>
       </section>
 
-      <h2 className="mt-6 mb-3 text-lg font-semibold">Transcript</h2>
+      <h2 className="mt-6 mb-3 px-1 text-[15px] font-semibold">Transcript</h2>
       {hasTranscript ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {callScript.map((t, i) => (
-            <div key={i} className={`flex ${t.who === 'ai' ? 'justify-start' : 'justify-end'}`}>
-              <div className={`max-w-[85%] rounded-3xl px-4 py-3 ${t.who === 'ai' ? 'rounded-tl-lg bg-card ring-1 ring-line' : 'rounded-tr-lg bg-marigold-soft'}`}>
-                <div className="text-xs font-medium text-ink-soft">{t.who === 'ai' ? 'Aalapon' : 'Ma'}</div>
-                <p className="mt-0.5 text-[15px] leading-relaxed">{t.bn}</p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t.en}</p>
+            <div key={i} className={`flex items-end gap-2 ${t.who === 'ai' ? '' : 'flex-row-reverse'}`}>
+              {t.who === 'ai' ? <Mark size={24} /> : <MaAvatar size={24} />}
+              <div className={`max-w-[80%] rounded-[20px] px-3.5 py-2.5 ${t.who === 'ai' ? 'rounded-bl-md bg-card shadow-card' : 'rounded-br-md bg-marigold-soft'}`}>
+                <p className="bn text-[15px] leading-snug">{t.bn}</p>
+                <p className="mt-1 text-[12px] leading-snug text-ink-soft">{t.en}</p>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="rounded-3xl bg-card p-5 text-sm text-ink-soft ring-1 ring-line">Full transcripts are kept for 7 days. Only the summary is stored for older calls.</p>
+        <Card className="p-4 text-[13px] text-ink-soft">Full transcripts are kept for 7 days. Older calls keep only the summary.</Card>
       )}
       <CareNav />
     </Screen>

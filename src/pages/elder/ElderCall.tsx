@@ -1,22 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Check, Mic, MicOff, Phone, PhoneOff, ShoppingBasket, Moon, Pill, Video, VideoOff, Volume2 } from 'lucide-react'
-import { StitchOrb } from '../../components/ui'
+import { Check, Mic, MicOff, Moon, Phone, PhoneOff, Pill, ShoppingBasket, Video, VideoOff, Volume2 } from 'lucide-react'
+import { VoiceOrb } from '../../components/ui'
+import { MaAvatar, Mark } from '../../components/brand'
 import { callScript } from '../../data/mock'
 import { toBn, useApp } from '../../state/AppState'
 
 type Phase = 'ringing' | 'connecting' | 'live' | 'ended'
 
 const detections = [
-  { afterTurn: 1, icon: Moon, bn: 'ঘুম কম হচ্ছে', noteBn: 'পরিবারকে জানানো হবে' },
-  { afterTurn: 3, icon: Pill, bn: 'প্রেসারের ওষুধ শেষের পথে', noteBn: 'তানভীরের অনুমোদনে পাঠানো হলো' },
-  { afterTurn: 5, icon: ShoppingBasket, bn: 'চাল আর ডিম', noteBn: 'অর্ডার দেওয়া হয়েছে' },
+  { afterTurn: 1, icon: Moon, bn: 'ঘুম কম হচ্ছে', noteBn: 'তানভীরকে জানানো হবে' },
+  { afterTurn: 3, icon: Pill, bn: 'প্রেসারের ওষুধ শেষের পথে', noteBn: 'তানভীরের অনুমতির জন্য পাঠানো হলো' },
+  { afterTurn: 5, icon: ShoppingBasket, bn: 'চাল আর ডিম', noteBn: 'অর্ডার হয়ে গেছে, বিকেলে আসবে' },
 ]
 
 function fmt(sec: number) {
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  return toBn(`${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`)
+  return toBn(`${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`)
 }
 
 export default function ElderCall() {
@@ -32,7 +31,7 @@ export default function ElderCall() {
 
   useEffect(() => {
     if (phase !== 'connecting') return
-    const t = setTimeout(() => setPhase('live'), 1600)
+    const t = setTimeout(() => setPhase('live'), 1500)
     return () => clearTimeout(t)
   }, [phase])
 
@@ -44,136 +43,138 @@ export default function ElderCall() {
 
   useEffect(() => {
     if (phase !== 'live') return
-    const len = callScript[turn].bn.length
     const t = setTimeout(() => {
       if (turn < callScript.length - 1) setTurn(turn + 1)
       else setPhase('ended')
-    }, Math.max(3200, len * 70))
+    }, Math.max(3400, callScript[turn].bn.length * 75))
     return () => clearTimeout(t)
   }, [phase, turn])
 
   useEffect(() => {
     if (phase !== 'ended' || logged.current) return
     logged.current = true
-    if (turn >= 5) addRequest({
-      kind: 'food',
-      titleEn: 'Groceries: rice and eggs',
-      titleBn: 'চাল আর ডিম',
-      detailEn: 'Ordered from her usual list through the partner grocer. BDT 640, arriving by 5 PM.',
-      quoteBn: 'চাল আর ডিম লাগবে।',
-      source: 'call',
-      status: 'done',
-      agentEn: 'Grocery order',
-    })
-    if (turn >= 3) addRequest({
-      kind: 'medicine',
-      titleEn: 'Refill blood pressure medicine',
-      titleBn: 'প্রেসারের ওষুধ',
-      detailEn: 'Amlodipine 5 mg, 30 tablets from the partner pharmacy. BDT 210. Needs your approval.',
-      quoteBn: 'ওষুধ প্রায় শেষ হয়ে এসেছে।',
-      source: 'call',
-      status: 'approval',
-      agentEn: 'Medicine refill',
-    })
+    if (turn >= 5)
+      addRequest({
+        kind: 'food',
+        titleEn: 'Groceries: rice and eggs',
+        titleBn: 'চাল আর ডিম',
+        detailEn: 'Ordered from her usual list through the partner grocer. BDT 640, arriving by 5 PM.',
+        quoteBn: 'চাল আর ডিম লাগবে।',
+        source: 'call',
+        status: 'done',
+        agentEn: 'Grocery order',
+      })
+    if (turn >= 3)
+      addRequest({
+        kind: 'medicine',
+        titleEn: 'Refill blood pressure medicine',
+        titleBn: 'প্রেসারের ওষুধ',
+        detailEn: 'Amlodipine 5 mg, 30 tablets from the partner pharmacy. BDT 210.',
+        quoteBn: 'ওষুধ প্রায় শেষ হয়ে এসেছে।',
+        source: 'call',
+        status: 'approval',
+        agentEn: 'Medicine refill',
+      })
   }, [phase, turn, addRequest])
 
   const current = callScript[turn]
   const prev = turn > 0 ? callScript[turn - 1] : null
   const shown = detections.filter((d) => phase === 'ended' || turn > d.afterTurn)
+  const next = () => (turn < callScript.length - 1 ? setTurn(turn + 1) : setPhase('ended'))
 
   return (
-    <div className="min-h-dvh bg-moss text-card">
-      <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-4 pb-[max(env(safe-area-inset-bottom),20px)] pt-[max(env(safe-area-inset-top),16px)]">
-        <div className="flex items-center justify-between py-2">
-          <span className="flex items-center gap-2 rounded-full bg-card/10 px-3 py-1.5 text-sm">
-            <span className={`size-2 rounded-full ${phase === 'live' ? 'bg-sage' : 'bg-marigold'}`} />
+    <div className="bn min-h-dvh bg-moss text-white" style={{ backgroundImage: 'radial-gradient(120% 60% at 50% 0%, rgba(244,163,64,0.18), transparent 60%)' }}>
+      <div className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pt-[max(env(safe-area-inset-top),12px)] pb-[max(env(safe-area-inset-bottom),16px)]">
+        <div className="flex h-11 items-center justify-between">
+          <span className="flex h-8 items-center gap-2 rounded-full bg-white/10 px-3 text-[14px] tabular-nums">
+            <span className={`size-2 rounded-full ${phase === 'live' ? 'bg-[#7ee0a1]' : 'bg-marigold'}`} />
             {phase === 'ringing' && 'কল আসছে'}
-            {phase === 'connecting' && 'সংযোগ হচ্ছে'}
+            {phase === 'connecting' && 'যুক্ত হচ্ছে'}
             {phase === 'live' && fmt(secs)}
             {phase === 'ended' && 'কল শেষ'}
           </span>
-          {video && phase === 'live' && <span className="rounded-full bg-card/10 px-3 py-1.5 text-xs">ভিডিও চালু, আপনার অনুমতিতে</span>}
+          {video && phase === 'live' && <span className="flex h-8 items-center rounded-full bg-white/10 px-3 text-[13px]">ভিডিও চালু, আপনার অনুমতিতে</span>}
         </div>
 
-        <div className="flex flex-col items-center pt-4 text-card/80">
-          <StitchOrb size={phase === 'ended' ? 140 : phase === 'live' ? 170 : 220} active={phase !== 'ended'} speaking={phase === 'live' && current.who === 'ai'} />
-          <h1 className="mt-4 text-3xl font-bold text-card">আলাপন</h1>
-          <p className="text-base text-card/70">
-            {phase === 'ringing' ? 'আপনার প্রতিদিনের সকালের কল' : phase === 'ended' ? `কথা হলো ${fmt(secs)} মিনিট` : current.who === 'ai' ? 'আলাপন বলছে' : 'আপনি বলছেন'}
+        <div className={`flex flex-col items-center ${phase === 'ringing' ? 'pt-14' : 'pt-3'}`}>
+          <VoiceOrb size={phase === 'ringing' ? 230 : phase === 'ended' ? 130 : 170} active={phase !== 'ended'} speaking={phase === 'live' && current.who === 'ai'} />
+          <h1 className="mt-3 text-[30px] font-bold leading-none">আলাপন</h1>
+          <p className="mt-2 text-[16px] text-white/65">
+            {phase === 'ringing' && 'প্রতিদিনের সকালের কল'}
+            {phase === 'connecting' && 'যুক্ত হচ্ছে...'}
+            {phase === 'live' && (current.who === 'ai' ? 'আলাপন বলছে' : 'আপনি বলছেন')}
+            {phase === 'ended' && `${fmt(secs)} মিনিট কথা হলো`}
           </p>
         </div>
 
         {phase === 'live' && (
-          <button onClick={() => (turn < callScript.length - 1 ? setTurn(turn + 1) : setPhase('ended'))} className="mt-6 flex-1 text-left" aria-label="Next line">
-            {prev && <p className="mb-3 line-clamp-2 text-base text-card/45">{prev.bn}</p>}
-            <p key={turn} className={`text-[1.55rem] font-semibold leading-snug ${current.who === 'ai' ? 'text-card' : 'text-marigold'}`}>
-              {current.bn}
-            </p>
-            <p className="mt-2 text-sm text-card/50">{current.en}</p>
+          <button onClick={next} className="mt-5 text-left" aria-label="পরের কথা">
+            {prev && <p className="mb-2 line-clamp-1 px-1 text-[15px] text-white/35">{prev.bn}</p>}
+            <div key={turn} className="animate-rise rounded-[22px] bg-white/[0.07] p-4 ring-1 ring-white/10">
+              <div className="mb-2 flex items-center gap-2 text-[13px] text-white/55">
+                {current.who === 'ai' ? <Mark size={18} a="#F6F3EA" lens="#1D3A2E" /> : <MaAvatar size={18} />}
+                {current.who === 'ai' ? 'আলাপন' : 'আপনি'}
+              </div>
+              <p className={`text-[22px] font-semibold leading-snug ${current.who === 'ai' ? 'text-white' : 'text-marigold'}`}>{current.bn}</p>
+              <p className="mt-2 font-sans text-[13px] leading-snug text-white/45">{current.en}</p>
+            </div>
           </button>
         )}
 
         {(phase === 'live' || phase === 'ended') && shown.length > 0 && (
-          <div className={`${phase === 'ended' ? 'mt-6 flex-1' : 'mt-4'} space-y-2`}>
-            {phase === 'ended' && <h2 className="mb-1 text-xl font-semibold">আলাপন যা করলো</h2>}
+          <div className={`${phase === 'ended' ? 'mt-6' : 'mt-3'} space-y-2`}>
+            {phase === 'ended' && <h2 className="mb-2 px-1 text-[18px] font-bold">আলাপন যা করলো</h2>}
             {shown.map((d) => (
-              <div key={d.bn} className="flex items-center gap-3 rounded-3xl bg-card/10 p-3 ring-1 ring-card/15">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-marigold text-moss">
-                  <d.icon size={20} />
+              <div key={d.bn} className="animate-rise flex items-center gap-3 rounded-[18px] bg-white/[0.07] px-3 py-2.5 ring-1 ring-white/10">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-marigold text-moss">
+                  <d.icon size={17} />
                 </span>
-                <div className="flex-1 leading-snug">
-                  <div className="text-base font-semibold">{d.bn}</div>
-                  <div className="text-sm text-card/65">{d.noteBn}</div>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <div className="text-[16px] font-semibold">{d.bn}</div>
+                  <div className="truncate text-[13px] text-white/60">{d.noteBn}</div>
                 </div>
-                <Check size={18} className="text-sage" />
+                <Check size={18} className="text-[#7ee0a1]" />
               </div>
             ))}
           </div>
         )}
 
-        {phase !== 'live' && phase !== 'ended' && <div className="flex-1" />}
+        <div className="flex-1" />
 
         {phase === 'ringing' && (
-          <div className="mb-4 flex items-end justify-around">
-            <button onClick={() => nav('/elder')} className="flex flex-col items-center gap-2">
-              <span className="grid size-20 place-items-center rounded-full bg-thread text-card active:scale-95 transition">
-                <PhoneOff size={30} />
-              </span>
-              <span className="text-lg">পরে</span>
-            </button>
-            <button onClick={() => setPhase('connecting')} className="flex flex-col items-center gap-2">
-              <span className="relative grid size-24 place-items-center rounded-full bg-sage text-moss active:scale-95 transition">
-                <span className="absolute inset-0 rounded-full bg-sage/60 animate-ring" />
-                <Phone size={36} className="relative" />
-              </span>
-              <span className="text-lg font-semibold">ধরুন</span>
-            </button>
+          <div className="mb-6 grid grid-cols-2 items-end">
+            <CallBtn label="পরে" onClick={() => nav('/elder')} className="size-[72px] bg-thread" icon={<PhoneOff size={28} />} />
+            <CallBtn label="ধরুন" onClick={() => setPhase('connecting')} className="size-[84px] bg-[#7ee0a1] text-moss" icon={<Phone size={32} />} pulse />
           </div>
         )}
 
         {(phase === 'live' || phase === 'connecting') && (
-          <div className="mt-6 mb-2 flex items-center justify-around rounded-full bg-card/10 p-2 ring-1 ring-card/15">
-            <button onClick={() => setMuted(!muted)} aria-label={muted ? 'Unmute' : 'Mute'} className="grid size-14 place-items-center rounded-full bg-card/10">
-              {muted ? <MicOff /> : <Mic />}
-            </button>
-            <button onClick={() => setVideo(!video)} aria-label="Video" className={`grid size-14 place-items-center rounded-full ${video ? 'bg-card text-moss' : 'bg-card/10'}`}>
-              {video ? <Video /> : <VideoOff />}
-            </button>
-            <button aria-label="Speaker" className="grid size-14 place-items-center rounded-full bg-card/10">
-              <Volume2 />
-            </button>
-            <button onClick={() => setPhase('ended')} aria-label="End call" className="grid size-16 place-items-center rounded-full bg-thread text-card">
-              <PhoneOff />
-            </button>
+          <div className="mt-5 grid grid-cols-4 gap-2">
+            <CallBtn small label={muted ? 'মিউট করা' : 'মিউট'} onClick={() => setMuted(!muted)} className={muted ? 'bg-white text-moss' : 'bg-white/10'} icon={muted ? <MicOff size={22} /> : <Mic size={22} />} />
+            <CallBtn small label="ভিডিও" onClick={() => setVideo(!video)} className={video ? 'bg-white text-moss' : 'bg-white/10'} icon={video ? <Video size={22} /> : <VideoOff size={22} />} />
+            <CallBtn small label="স্পিকার" className="bg-white/10" icon={<Volume2 size={22} />} />
+            <CallBtn small label="শেষ" onClick={() => setPhase('ended')} className="bg-thread" icon={<PhoneOff size={22} />} />
           </div>
         )}
 
         {phase === 'ended' && (
-          <Link to="/elder" className="mt-6 mb-2 flex h-16 items-center justify-center rounded-full bg-marigold text-xl font-bold text-moss active:scale-[0.98] transition">
+          <Link to="/elder" className="press flex h-14 items-center justify-center rounded-full bg-marigold text-[19px] font-bold text-moss">
             ঠিক আছে
           </Link>
         )}
       </div>
     </div>
+  )
+}
+
+function CallBtn({ label, onClick, className, icon, small, pulse }: { label: string; onClick?: () => void; className: string; icon: ReactNode; small?: boolean; pulse?: boolean }) {
+  return (
+    <button onClick={onClick} className="press flex flex-col items-center gap-1.5">
+      <span className={`relative grid place-items-center rounded-full ${small ? 'size-14' : ''} ${className}`}>
+        {pulse && <span className="absolute inset-0 rounded-full bg-[#7ee0a1] animate-ring" />}
+        <span className="relative">{icon}</span>
+      </span>
+      <span className={small ? 'text-[13px] text-white/70' : 'text-[17px] font-semibold'}>{label}</span>
+    </button>
   )
 }

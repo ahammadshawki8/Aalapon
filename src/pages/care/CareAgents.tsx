@@ -1,15 +1,15 @@
 import { useState } from 'react'
-import { Bell, Pill as PillIcon, ShieldCheck, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
-import { CareNav, Pill, Screen } from '../../components/ui'
+import { Bell, CircleDashed, Pill as PillIcon, ShieldCheck, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
+import { Card, CareNav, PageTitle, Screen } from '../../components/ui'
 import { agents, newAgentRequests, type AgentDef } from '../../data/mock'
 
 const icons = { phone: UserRound, basket: ShoppingBasket, pill: PillIcon, doctor: Stethoscope, bell: Bell, alert: Siren }
+const tints = { phone: 'bg-mint text-moss-2', basket: 'bg-peach text-marigold-deep', pill: 'bg-lilac text-lilac-ink', doctor: 'bg-sky text-sky-ink', bell: 'bg-sage-soft text-moss-2', alert: 'bg-thread-soft text-thread' }
 
 const flow = [
-  { t: 'Ma asks for something', d: 'On the call, or by tapping in her app' },
-  { t: 'Aalapon understands the need', d: 'What she wants, how urgent it is' },
-  { t: 'An agent that can do it?', d: 'Yes: it runs, or waits for your approval' },
-  { t: 'No agent yet?', d: 'The admin reviews a request to create one' },
+  { t: 'Ma asks', d: 'On the call or in her app' },
+  { t: 'Aalapon understands', d: 'The need and how urgent it is' },
+  { t: 'An agent acts', d: 'On its own, or after your OK' },
 ]
 
 export default function CareAgents() {
@@ -17,78 +17,71 @@ export default function CareAgents() {
 
   return (
     <Screen className="pb-28">
-      <header className="py-2">
-        <h1 className="text-2xl font-bold">Agents</h1>
-        <p className="text-sm text-ink-soft">Helpers that act on what Ma asks for. You decide which ones need your approval.</p>
-      </header>
+      <PageTitle title="Agents" sub="Helpers that turn Ma's requests into action. You choose which ones ask first." />
 
-      <section className="mt-3 rounded-4xl bg-moss p-5 text-card">
-        <h2 className="font-semibold">How a request becomes help</h2>
-        <ol className="mt-4 space-y-0">
-          {flow.map((s, i) => (
-            <li key={s.t} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <span className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold ${i === 3 ? 'bg-card/15 text-card' : 'bg-marigold text-moss'}`}>{i + 1}</span>
-                {i < flow.length - 1 && <span className="my-1 w-0.5 flex-1 border-l-2 border-dashed border-card/30" />}
-              </div>
-              <div className="pb-4">
-                <div className="font-semibold leading-tight">{s.t}</div>
-                <div className="text-sm text-card/65">{s.d}</div>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <div className="grid grid-cols-3 gap-1.5 rounded-[22px] bg-moss p-1.5 text-white">
+        {flow.map((s, i) => (
+          <div key={s.t} className="rounded-[16px] bg-white/[0.06] p-2.5">
+            <span className="grid size-6 place-items-center rounded-full bg-marigold text-[12px] font-bold text-moss">{i + 1}</span>
+            <div className="mt-2 text-[13px] font-semibold leading-tight">{s.t}</div>
+            <div className="mt-0.5 text-[11.5px] leading-snug text-white/55">{s.d}</div>
+          </div>
+        ))}
+      </div>
 
-      <h2 className="mt-6 mb-2.5 text-lg font-semibold">Active agents</h2>
-      <div className="space-y-2.5">
+      <h2 className="mb-2 mt-6 px-1 text-[15px] font-semibold">Active agents</h2>
+      <Card className="divide-y divide-line overflow-hidden">
         {agents.map((a) => {
           const Icon = icons[a.icon]
           const mode = modes[a.id]
           return (
-            <div key={a.id} className="rounded-3xl bg-card p-4 ring-1 ring-line">
+            <div key={a.id} className="p-3.5">
               <div className="flex items-start gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-sage-soft text-moss">
-                  <Icon size={20} />
+                <span className={`grid size-10 shrink-0 place-items-center rounded-[14px] ${tints[a.icon]}`}>
+                  <Icon size={19} />
                 </span>
-                <div className="flex-1">
-                  <div className="font-semibold leading-tight">{a.nameEn}</div>
-                  <p className="mt-0.5 text-sm leading-relaxed text-ink-soft">{a.descEn}</p>
-                  <p className="mt-1 text-xs text-ink-soft">{a.runsEn}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[15px] font-semibold">{a.nameEn}</span>
+                    <span className="text-[11.5px] text-ink-faint">{a.runsEn}</span>
+                  </div>
+                  <p className="mt-0.5 text-[13px] leading-snug text-ink-soft">{a.descEn}</p>
+                  {a.icon !== 'alert' ? (
+                    <div className="mt-2.5 inline-grid grid-cols-2 rounded-full bg-paper p-0.5" role="radiogroup" aria-label={`${a.nameEn} mode`}>
+                      {(['auto', 'approve'] as const).map((m) => (
+                        <button
+                          key={m}
+                          role="radio"
+                          aria-checked={mode === m}
+                          onClick={() => setModes({ ...modes, [a.id]: m })}
+                          className={`h-8 rounded-full px-3 text-[12.5px] font-medium transition ${mode === m ? 'bg-white text-ink shadow-card' : 'text-ink-faint'}`}
+                        >
+                          {m === 'auto' ? 'Runs on its own' : 'Ask me first'}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-thread">
+                      <ShieldCheck size={13} /> Always on, calls every caregiver at once
+                    </p>
+                  )}
                 </div>
               </div>
-              {a.icon !== 'alert' ? (
-                <div className="mt-3 grid grid-cols-2 rounded-full bg-paper p-1" role="radiogroup" aria-label={`${a.nameEn} mode`}>
-                  {(['auto', 'approve'] as const).map((m) => (
-                    <button
-                      key={m}
-                      role="radio"
-                      aria-checked={mode === m}
-                      onClick={() => setModes({ ...modes, [a.id]: m })}
-                      className={`h-10 rounded-full text-sm font-medium transition ${mode === m ? 'bg-card shadow-sm ring-1 ring-line' : 'text-ink-soft'}`}
-                    >
-                      {m === 'auto' ? 'Runs on its own' : 'Ask me first'}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-soft">
-                  <ShieldCheck size={14} /> Always on. Calls every caregiver at once.
-                </p>
-              )}
             </div>
           )
         })}
-      </div>
+      </Card>
 
-      <h2 className="mt-6 mb-2.5 text-lg font-semibold">New agents requested</h2>
+      <h2 className="mb-2 mt-6 px-1 text-[15px] font-semibold">No agent yet</h2>
       {newAgentRequests.map((n) => (
-        <div key={n.id} className="rounded-3xl border-2 border-dashed border-ink-soft/30 p-4">
-          <Pill>{n.statusEn}</Pill>
-          <h3 className="mt-2.5 font-semibold">{n.titleEn}</h3>
-          <p className="mt-2 rounded-2xl bg-card px-3 py-2 text-[15px]">"{n.fromBn}"</p>
-          <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">
-            No agent can do this yet. Aalapon sent the request to the admin team. Once approved and built from vetted connectors, it becomes available to every family.
+        <div key={n.id} className="rounded-[22px] border border-dashed border-ink-faint/40 p-4">
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-ink-soft">
+            <CircleDashed size={14} /> {n.statusEn}
+          </div>
+          <h3 className="mt-1.5 text-[16px] font-semibold">{n.titleEn}</h3>
+          <p className="bn mt-1 text-[15px] text-ink/80">"{n.fromBn}"</p>
+          <p className="mt-2 text-[13px] leading-snug text-ink-soft">
+            Nothing can do this yet, so Aalapon asked the admin team. Once approved and built from vetted connectors, every family gets it.
           </p>
         </div>
       ))}

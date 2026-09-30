@@ -1,51 +1,68 @@
 import { useState } from 'react'
-import { Check, Phone, Smartphone, X } from 'lucide-react'
-import { CareNav, Pill, Screen } from '../../components/ui'
+import { Check, Phone, Pill as PillIcon, ShoppingBasket, Siren, Smartphone, Stethoscope, UserRound, Zap, X } from 'lucide-react'
+import { Card, CareNav, PageTitle, Pill, Screen } from '../../components/ui'
 import { timeAgo, useApp, type CareRequest } from '../../state/AppState'
 
 const statusMeta: Record<CareRequest['status'], { label: string; tone: 'auto' | 'approve' | 'alert' | 'good' | 'neutral' }> = {
-  done: { label: 'Done by agent', tone: 'good' },
-  approval: { label: 'Needs your approval', tone: 'approve' },
+  done: { label: 'Done', tone: 'good' },
+  approval: { label: 'Needs your OK', tone: 'approve' },
   admin: { label: 'New agent requested', tone: 'neutral' },
   sent: { label: 'Sent', tone: 'auto' },
   declined: { label: 'Declined', tone: 'alert' },
 }
 
-function Source({ r }: { r: CareRequest }) {
+const kindIcon = { medicine: PillIcon, food: ShoppingBasket, doctor: Stethoscope, family: UserRound, unwell: Siren, bill: Zap }
+const kindTint = {
+  medicine: 'bg-lilac text-lilac-ink',
+  food: 'bg-peach text-marigold-deep',
+  doctor: 'bg-sky text-sky-ink',
+  family: 'bg-mint text-moss-2',
+  unwell: 'bg-thread-soft text-thread',
+  bill: 'bg-paper text-ink-soft',
+}
+
+function Meta({ r }: { r: CareRequest }) {
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-ink-soft">
-      {r.source === 'call' ? <Phone size={12} /> : <Smartphone size={12} />}
-      {r.source === 'call' ? 'Said on call' : 'Tapped in app'}, {timeAgo(r.at)}
+    <span className="inline-flex items-center gap-1 text-[12px] text-ink-faint">
+      {r.source === 'call' ? <Phone size={11} /> : <Smartphone size={11} />}
+      {r.source === 'call' ? 'On the call' : 'From her app'}, {timeAgo(r.at).toLowerCase()}
     </span>
   )
 }
 
 export function ApprovalCard({ r }: { r: CareRequest }) {
   const { setStatus } = useApp()
+  const Icon = kindIcon[r.kind]
   return (
-    <div className="rounded-3xl bg-card p-4 ring-2 ring-marigold/60">
-      <div className="flex items-center justify-between gap-2">
-        <Pill tone="approve">{r.agentEn}</Pill>
-        <Source r={r} />
+    <Card className="p-3.5 ring-1 ring-marigold/50">
+      <div className="flex gap-3">
+        <span className={`grid size-10 shrink-0 place-items-center rounded-[14px] ${kindTint[r.kind]}`}>
+          <Icon size={19} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-semibold leading-snug">{r.titleEn}</div>
+          <p className="mt-0.5 text-[13px] leading-snug text-ink-soft">{r.detailEn}</p>
+          {r.quoteBn && <p className="bn mt-1.5 text-[14px] text-ink/80">"{r.quoteBn}"</p>}
+          <div className="mt-1.5">
+            <Meta r={r} />
+          </div>
+        </div>
       </div>
-      <h3 className="mt-2.5 text-lg font-semibold leading-snug">{r.titleEn}</h3>
-      <p className="mt-1 text-sm leading-relaxed text-ink-soft">{r.detailEn}</p>
-      {r.quoteBn && <p className="mt-2.5 rounded-2xl bg-paper px-3 py-2 text-[15px]">"{r.quoteBn}"</p>}
-      <div className="mt-3.5 grid grid-cols-2 gap-2.5">
-        <button onClick={() => setStatus(r.id, 'declined')} className="flex h-12 items-center justify-center gap-1.5 rounded-full bg-paper font-semibold ring-1 ring-line active:scale-[0.98] transition">
-          <X size={18} /> Decline
+      <div className="mt-3 flex gap-2">
+        <button onClick={() => setStatus(r.id, 'declined')} className="press flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full bg-paper text-[14px] font-semibold text-ink-soft">
+          <X size={16} /> Not now
         </button>
-        <button onClick={() => setStatus(r.id, 'done')} className="flex h-12 items-center justify-center gap-1.5 rounded-full bg-moss font-semibold text-card active:scale-[0.98] transition">
-          <Check size={18} /> Approve
+        <button onClick={() => setStatus(r.id, 'done')} className="press flex h-10 flex-[1.4] items-center justify-center gap-1.5 rounded-full bg-moss text-[14px] font-semibold text-white">
+          <Check size={16} /> Approve
         </button>
       </div>
-    </div>
+    </Card>
   )
 }
 
 const filters = [
   { id: 'all', label: 'All' },
-  { id: 'approval', label: 'To approve' },
+  { id: 'approval', label: 'Needs OK' },
   { id: 'done', label: 'Done' },
   { id: 'admin', label: 'New agents' },
 ] as const
@@ -54,47 +71,52 @@ export default function CareRequests() {
   const { requests, reset } = useApp()
   const [f, setF] = useState<(typeof filters)[number]['id']>('all')
   const list = requests.filter((r) => f === 'all' || r.status === f)
+  const count = (id: string) => (id === 'all' ? requests.length : requests.filter((r) => r.status === id).length)
 
   return (
     <Screen className="pb-28">
-      <header className="py-2">
-        <h1 className="text-2xl font-bold">Requests</h1>
-        <p className="text-sm text-ink-soft">What Ma asked for, and what the agents did about it.</p>
-      </header>
+      <PageTitle title="Requests" sub="What Ma asked for, and what happened next." />
 
-      <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4">
+      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1">
         {filters.map((x) => (
           <button
             key={x.id}
             onClick={() => setF(x.id)}
-            className={`h-10 shrink-0 rounded-full px-4 text-sm font-medium transition ${f === x.id ? 'bg-marigold text-moss' : 'bg-card ring-1 ring-line'}`}
+            className={`press flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[13.5px] font-medium ${f === x.id ? 'bg-ink text-white' : 'bg-card text-ink-soft shadow-card'}`}
           >
             {x.label}
+            <span className={`text-[12px] ${f === x.id ? 'text-white/60' : 'text-ink-faint'}`}>{count(x.id)}</span>
           </button>
         ))}
       </div>
 
-      <div className="mt-4 space-y-2.5">
-        {list.length === 0 && <p className="rounded-3xl bg-card p-6 text-center text-ink-soft ring-1 ring-line">Nothing here. New requests from calls and the app show up here.</p>}
-        {list.map((r) =>
-          r.status === 'approval' ? (
-            <ApprovalCard key={r.id} r={r} />
-          ) : (
-            <div key={r.id} className="rounded-3xl bg-card p-4 ring-1 ring-line">
-              <div className="flex items-center justify-between gap-2">
-                <Pill tone={statusMeta[r.status].tone}>{statusMeta[r.status].label}</Pill>
-                <Source r={r} />
+      <div className="mt-3 space-y-2">
+        {list.length === 0 && <Card className="p-6 text-center text-[14px] text-ink-soft">Nothing here yet. Requests from calls and her app show up here.</Card>}
+        {list.map((r) => {
+          if (r.status === 'approval') return <ApprovalCard key={r.id} r={r} />
+          const Icon = kindIcon[r.kind]
+          return (
+            <Card key={r.id} className="flex gap-3 p-3.5">
+              <span className={`grid size-10 shrink-0 place-items-center rounded-[14px] ${kindTint[r.kind]}`}>
+                <Icon size={19} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[15px] font-semibold leading-snug">{r.titleEn}</span>
+                  <Pill tone={statusMeta[r.status].tone}>{statusMeta[r.status].label}</Pill>
+                </div>
+                <p className="mt-0.5 text-[13px] leading-snug text-ink-soft">{r.detailEn}</p>
+                {r.quoteBn && <p className="bn mt-1.5 text-[14px] text-ink/80">"{r.quoteBn}"</p>}
+                <div className="mt-1.5">
+                  <Meta r={r} />
+                </div>
               </div>
-              <h3 className="mt-2.5 font-semibold leading-snug">{r.titleEn}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-ink-soft">{r.detailEn}</p>
-              {r.quoteBn && <p className="mt-2.5 rounded-2xl bg-paper px-3 py-2 text-[15px]">"{r.quoteBn}"</p>}
-              <p className="mt-2.5 text-xs text-ink-soft">Agent: {r.agentEn}</p>
-            </div>
-          ),
-        )}
+            </Card>
+          )
+        })}
       </div>
 
-      <button onClick={reset} className="mt-6 w-full rounded-full border border-dashed border-ink-soft/40 py-3 text-sm text-ink-soft">
+      <button onClick={reset} className="mt-6 h-10 w-full rounded-full text-[13px] text-ink-faint">
         Reset demo data
       </button>
       <CareNav />

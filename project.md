@@ -226,7 +226,7 @@ Next call -> AI closes the loop ("মা, আপনার ওষুধ আজ �
 
 | Layer | Choice (initial) | Notes |
 |---|---|---|
-| Frontend | React 19 + TypeScript + Vite + Tailwind CSS v4 + vite-plugin-pwa + react-router (HashRouter) + lucide-react | Current repo. Fonts: Hind Siliguri (Bangla), Plus Jakarta Sans (Latin) |
+| Frontend | React 19 + TypeScript + Vite + Tailwind CSS v4 + vite-plugin-pwa + react-router (HashRouter) + lucide-react | Current repo. Fonts: Anek Bangla (Bangla), Onest (Latin) |
 | Backend | FastAPI (Python) or Node (Hono) | Pick in tier 1; Python favoured for the voice/AI pipeline |
 | Database | Postgres (Supabase: auth with phone OTP, storage, realtime) | Row-level security per family |
 | Telephony | Twilio / SIP trunk; long term a Bangladeshi operator partnership (Grameenphone) for local numbers and cheaper minutes | Normal voice call = button phone support |
@@ -256,13 +256,15 @@ Next call -> AI closes the loop ("মা, আপনার ওষুধ আজ �
 
 ## 9. Frontend (tier 0) specification
 
-### 9.1 Design direction
-- References: `../ui_inspired/1.jpg` (soft cards, pill buttons, video-call screen), `2.jpg` (sage green + orange, big score number, pill filters), `3.jpg` (pastel tiles, rounded bottom nav with dark active pill).
-- Concept: nakshi kantha. The running stitch of the quilts Bangladeshi mothers sew is the visual signature: dashed "stitch" rings form the Aalapon voice orb (`StitchOrb` in `src/components/ui.tsx`) and the logo, and dashed dividers appear sparingly. Spend boldness only there; everything else stays quiet.
-- Palette (tokens in `src/index.css` under `@theme`): paper `#EEF0E5`, card `#FBFBF6`, ink `#1C2A22`, moss (primary, dark) `#1F3A2E`, sage `#9DB48A`, marigold (call/CTA accent) `#F2A33A`, thread red (alerts only) `#C8553D`, pastel tiles lilac `#E4DDF4`, mint `#D7EBDD`, peach `#FBE1CB`, sky `#D8E7F3`.
-- Type: Anek Bangla (Google Fonts) for both Bangla and Latin, weights 400-800. Elder body text 18px minimum, elder headings 28px+.
-- Shape: 24-32px card radius, pill buttons, floating pill bottom nav with the active tab expanded in moss.
-- Layout: max width 480px column centred on desktop; caregiver portal has a fixed bottom nav; primary actions in the thumb zone.
+### 9.1 Design direction (v2, 2026-09-30)
+- References: `../ui_inspired/1.jpg`, `2.jpg`, `3.jpg` (sage + orange, pastel tiles, pill buttons, rounded bottom nav).
+- UX rules followed: nextlevelbuilder/ui-ux-pro-max-skill and awesome-skills/mobile-app-design (44-48px tap targets, 16px+ body, labelled bottom nav with 5 tabs max, grouped lists instead of piles of cards, tabular numbers, no emoji icons, reduced-motion support, no horizontal scroll).
+- Brand mark (`Mark` in `src/components/brand.tsx`): two speech bubbles leaning into each other, cream/moss and marigold, the overlap forms a leaf-shaped lens. Meaning: two voices, one conversation; the moment listening turns into care. Wordmark: "আলাপন" in Anek Bangla bold + lowercase "aalapon".
+- Ma's portrait (`MaAvatar`): hand-drawn SVG, grey hair, green sari over the head with a marigold stitched border, round glasses. Used on the elder home, caregiver hero card, quotes and transcripts.
+- Palette (tokens in `src/index.css`): paper `#F3F4EE`, card `#FFFFFF`, ink `#16221B`, moss `#1D3A2E` (primary), marigold `#F4A340` (call/CTA), thread red `#CF523C` (alerts only), sage `#A7C095`, pastel tiles lilac `#EBE5F9`, mint `#DFF0E4`, peach `#FDE7D4`, sky `#E0ECF8`.
+- Type: Onest for Latin, Anek Bangla for Bangla (utility class `bn`). Caregiver scale 12/13/15/17/28, elder scale 15/17/19/24.
+- Signature moments: the voice orb on the call screen (brand mark breathing with a live waveform) and the dark moss hero card on the caregiver home (score + 7-day sparkline + Call / Last call / Voice note).
+- Caregiver home is organised as "Ma's day": hero, wellbeing update, one approval, 2x2 watch tiles with sparklines, today timeline.
 
 ### 9.2 Routes
 | Route | Screen |
@@ -342,7 +344,8 @@ Aalapon/
   public/             <- icons, manifest assets
   src/
     main.tsx, App.tsx, index.css
-    components/ui.tsx <- Screen, BackBar, StitchOrb, Logo, CareNav, Bars, Ring, Pill
+    components/ui.tsx <- Screen, BackBar, PageTitle, SectionHead, Card, VoiceOrb, CareNav, Spark, Bars, Pill
+    components/brand.tsx <- Mark (logo), Logo (mark + wordmark), MaAvatar, Initials
     pages/elder/      <- elder portal screens
     pages/care/       <- caregiver portal screens
     data/mock.ts      <- all demo content (persona, medicines, vitals, insights, calls, agents, call script)
@@ -357,8 +360,10 @@ Commands: `npm install`, `npm run dev`, `npm run build`, `npm run preview`.
 
 - 2026-09-30: Tier 0 demo frontend built and pushed. All routes in section 9.2 work with mock data. Not yet deployed.
 - Demo tips for the video: open `#/elder/call?mode=incoming` for the incoming AI call (tap the caption to skip to the next line). Finishing the call adds a grocery order and a medicine refill approval to the caregiver's Requests. "Reset demo data" is at the bottom of the Requests screen.
+- 2026-09-30 (v2): UI redesign pass: new brand mark and app icons, hand-drawn avatar, compact grouped layouts, labelled bottom nav, sparklines, timeline, accordion insights. Duplicate requests are deduped by title.
 - Next: deploy, real-device check, then Tier 1.
 
 ## 14. Session log
 
+- 2026-09-30: UI v2 redesign pushed.
 - 2026-09-30: Idea locked (Aalapon). Wrote project.md, added smartwatch integration to scope, scaffolded frontend, created GitHub repo ahammadshawki8/Aalapon.

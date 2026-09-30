@@ -49,6 +49,7 @@ export const wellbeing = {
   labelEn: 'Needs a check-in',
   trendEn: 'Down 9 points from last week',
   moodWeek: [4, 4, 3, 3, 2, 3, 3],
+  scoreWeek: [76, 74, 73, 69, 63, 66, 64],
 }
 
 export type Insight = {

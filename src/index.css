@@ -1,39 +1,55 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Anek Bangla', system-ui, sans-serif;
+  --font-sans: 'Onest', 'Anek Bangla', system-ui, sans-serif;
+  --font-bn: 'Anek Bangla', 'Onest', system-ui, sans-serif;
 
-  --color-paper: #eef0e5;
-  --color-card: #fbfbf6;
-  --color-ink: #1c2a22;
-  --color-ink-soft: #55635a;
-  --color-moss: #1f3a2e;
-  --color-moss-2: #2d5140;
-  --color-sage: #9db48a;
-  --color-sage-soft: #dfe8d3;
-  --color-marigold: #f2a33a;
-  --color-marigold-soft: #fbe6c4;
-  --color-thread: #c8553d;
-  --color-thread-soft: #f6dcd4;
-  --color-lilac: #e4ddf4;
-  --color-mint: #d7ebdd;
-  --color-peach: #fbe1cb;
-  --color-sky: #d8e7f3;
-  --color-line: #d9dccd;
+  --color-paper: #f3f4ee;
+  --color-card: #ffffff;
+  --color-ink: #16221b;
+  --color-ink-soft: #5c6961;
+  --color-ink-faint: #8e9891;
+  --color-moss: #1d3a2e;
+  --color-moss-2: #2f5645;
+  --color-moss-3: #3f6e58;
+  --color-sage: #a7c095;
+  --color-sage-soft: #e4ecdb;
+  --color-marigold: #f4a340;
+  --color-marigold-deep: #9a5a0e;
+  --color-marigold-soft: #fdebd2;
+  --color-thread: #cf523c;
+  --color-thread-soft: #fbe4dd;
+  --color-lilac: #ebe5f9;
+  --color-lilac-ink: #5b4a93;
+  --color-mint: #dff0e4;
+  --color-peach: #fde7d4;
+  --color-sky: #e0ecf8;
+  --color-sky-ink: #2f628c;
+  --color-line: #e5e7df;
 
-  --radius-4xl: 2rem;
+  --shadow-card: 0 1px 2px rgba(22, 34, 27, 0.04), 0 10px 28px -16px rgba(22, 34, 27, 0.16);
+  --shadow-float: 0 18px 40px -18px rgba(29, 58, 46, 0.55);
 
-  --animate-breathe: breathe 2.6s ease-in-out infinite;
-  --animate-spin-slow: spin 18s linear infinite;
-  --animate-ring: ring 1.6s ease-out infinite;
+  --animate-breathe: breathe 2.4s ease-in-out infinite;
+  --animate-ring: ring 2s ease-out infinite;
+  --animate-wave: wave 1s ease-in-out infinite;
+  --animate-rise: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
   @keyframes breathe {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.06); }
+    50% { transform: scale(1.05); }
   }
   @keyframes ring {
-    0% { transform: scale(0.9); opacity: 0.7; }
-    100% { transform: scale(1.6); opacity: 0; }
+    0% { transform: scale(0.85); opacity: 0.55; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+  }
+  @keyframes rise {
+    from { transform: translateY(8px); }
+    to { transform: none; }
   }
 }
 
@@ -45,6 +61,7 @@
   body {
     @apply bg-paper text-ink font-sans antialiased;
     min-height: 100dvh;
+    font-feature-settings: 'tnum' 1;
   }
   :focus-visible {
     outline: 3px solid var(--color-marigold);
@@ -55,9 +72,15 @@
   }
 }
 
-.stitch {
-  background-image: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 14px);
-  height: 2px;
+@utility bn {
+  font-family: var(--font-bn);
+}
+
+@utility press {
+  transition: transform 0.15s ease, background-color 0.2s ease;
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -68,7 +91,7 @@
 }
 
 .pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 @media (prefers-reduced-motion: reduce) {

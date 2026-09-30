@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Check, Mic, Pill, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
-import { BackBar, Screen } from '../../components/ui'
+import { Check, ChevronRight, Mic, Pill, ShoppingBasket, Siren, Stethoscope, UserRound } from 'lucide-react'
+import { BackBar, Card, Screen } from '../../components/ui'
 import { useApp, type CareRequest } from '../../state/AppState'
 
 type Cfg = {
@@ -76,15 +76,16 @@ export default function ElderNeed() {
 
   if (done) {
     return (
-      <Screen className="flex flex-col pb-8">
+      <Screen className="bn flex flex-col pb-[max(env(safe-area-inset-bottom),20px)]">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <span className="grid size-28 place-items-center rounded-full bg-sage text-moss">
-            <Check size={56} strokeWidth={2.5} />
+          <span className="relative grid size-24 place-items-center rounded-full bg-sage-soft text-moss-2">
+            <span className="absolute inset-0 rounded-full bg-sage/40 animate-ring" />
+            <Check size={48} strokeWidth={2.6} className="relative" />
           </span>
-          <h1 className="mt-6 text-3xl font-bold">{done}</h1>
-          <p className="mt-3 max-w-[26ch] text-xl leading-relaxed text-ink-soft">{c.doneBn}</p>
+          <h1 className="mt-6 text-[28px] font-bold leading-tight">{done}</h1>
+          <p className="mt-2 max-w-[26ch] text-[18px] leading-relaxed text-ink-soft">{c.doneBn}</p>
         </div>
-        <Link to="/elder" className="flex h-16 items-center justify-center rounded-full bg-moss text-xl font-bold text-card active:scale-[0.98] transition">
+        <Link to="/elder" className="press flex h-14 items-center justify-center rounded-full bg-moss text-[19px] font-bold text-white">
           ঠিক আছে
         </Link>
       </Screen>
@@ -92,29 +93,33 @@ export default function ElderNeed() {
   }
 
   return (
-    <Screen className="flex flex-col pb-8">
+    <Screen className="bn flex flex-col pb-[max(env(safe-area-inset-bottom),20px)]">
       <BackBar to="/elder" />
-      <div className={`${c.bg} mt-3 flex items-center gap-4 rounded-4xl p-5`}>
-        <span className="grid size-14 place-items-center rounded-full bg-card/80 text-moss">
-          <Icon size={28} />
+      <div className="flex items-center gap-3.5 pt-1">
+        <span className={`${c.bg} grid size-14 place-items-center rounded-[18px] text-moss`}>
+          <Icon size={26} />
         </span>
-        <h1 className="text-2xl font-bold">{c.titleBn}</h1>
+        <div>
+          <h1 className="text-[26px] font-bold leading-tight">{c.titleBn}</h1>
+          <p className="text-[16px] text-ink-soft">{c.askBn}</p>
+        </div>
       </div>
-      <h2 className="mt-7 text-xl font-semibold">{c.askBn}</h2>
-      <div className="mt-3 space-y-3">
+      <Card className="mt-5 divide-y divide-line overflow-hidden">
         {c.options.map((o) => (
-          <button key={o} onClick={() => pick(o)} className="flex min-h-16 w-full items-center rounded-3xl bg-card px-5 text-left text-xl font-semibold ring-1 ring-line active:scale-[0.98] active:bg-sage-soft transition">
+          <button key={o} onClick={() => pick(o)} className="flex min-h-[62px] w-full items-center justify-between px-4 text-left text-[19px] font-semibold active:bg-sage-soft">
             {o}
+            <ChevronRight size={20} className="text-ink-faint" />
           </button>
         ))}
-      </div>
+      </Card>
       <div className="flex-1" />
-      <button onClick={() => pick(c.options[0])} className="mt-8 flex flex-col items-center gap-2 self-center">
-        <span className="grid size-20 place-items-center rounded-full bg-marigold text-moss shadow-[0_12px_30px_-12px_rgba(242,163,58,0.9)]">
-          <Mic size={32} />
-        </span>
-        <span className="text-lg text-ink-soft">চেপে ধরে মুখে বলুন</span>
-      </button>
+      <div className="mt-8 flex flex-col items-center gap-2.5">
+        <p className="text-[16px] text-ink-soft">অথবা মুখে বলুন</p>
+        <button onClick={() => pick(c.options[0])} aria-label="মুখে বলুন" className="press relative grid size-20 place-items-center rounded-full bg-marigold text-moss shadow-[0_14px_30px_-12px_rgba(244,163,64,0.9)]">
+          <span className="absolute inset-0 rounded-full bg-marigold/50 animate-ring" />
+          <Mic size={30} className="relative" />
+        </button>
+      </div>
     </Screen>
   )
 }
