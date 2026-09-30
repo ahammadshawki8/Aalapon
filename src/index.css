@@ -34,6 +34,9 @@
   --animate-ring: ring 2s ease-out infinite;
   --animate-wave: wave 1s ease-in-out infinite;
   --animate-rise: rise 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 40s linear infinite;
 
   @keyframes breathe {
     0%, 100% { transform: scale(1); }
@@ -46,6 +49,18 @@
   @keyframes wave {
     0%, 100% { transform: scaleY(0.35); }
     50% { transform: scaleY(1); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6) translateY(10px); opacity: 0; }
+    70% { transform: scale(1.04); opacity: 1; }
+    100% { transform: none; opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -6px; }
+  }
+  @keyframes spin-slow {
+    to { rotate: 360deg; }
   }
   @keyframes rise {
     from { transform: translateY(8px); }
