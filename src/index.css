@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Anek Bangla', system-ui, sans-serif;
+
+  --color-paper: #eef0e5;
+  --color-card: #fbfbf6;
+  --color-ink: #1c2a22;
+  --color-ink-soft: #55635a;
+  --color-moss: #1f3a2e;
+  --color-moss-2: #2d5140;
+  --color-sage: #9db48a;
+  --color-sage-soft: #dfe8d3;
+  --color-marigold: #f2a33a;
+  --color-marigold-soft: #fbe6c4;
+  --color-thread: #c8553d;
+  --color-thread-soft: #f6dcd4;
+  --color-lilac: #e4ddf4;
+  --color-mint: #d7ebdd;
+  --color-peach: #fbe1cb;
+  --color-sky: #d8e7f3;
+  --color-line: #d9dccd;
+
+  --radius-4xl: 2rem;
+
+  --animate-breathe: breathe 2.6s ease-in-out infinite;
+  --animate-spin-slow: spin 18s linear infinite;
+  --animate-ring: ring 1.6s ease-out infinite;
+
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+  }
+  @keyframes ring {
+    0% { transform: scale(0.9); opacity: 0.7; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-marigold);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+.stitch {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 8px, transparent 8px 14px);
+  height: 2px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
