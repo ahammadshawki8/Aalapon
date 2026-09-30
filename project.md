@@ -30,6 +30,7 @@
 | Round 1 deadline | 30 September 2026 (form + video of 2 minutes or less, MP4) |
 | Product form | Progressive Web App (installable, works in browser) + voice call channel that works on any phone, including button phones |
 | Owner / GitHub | ahammadshawki8 |
+| Live demo | https://ahammadshawki8.github.io/Aalapon/ (GitHub Pages, auto-deployed from `main` by `.github/workflows/deploy.yml`) |
 
 ---
 
@@ -307,7 +308,7 @@ Mock data lives in `src/data/`. Shared state (requests raised by the elder show 
 - [x] Caregiver: dashboard, insights, calls + transcript, requests + approvals, agents, health vitals, settings
 - [x] Elder request -> caregiver inbox loop (localStorage, syncs across tabs)
 - [x] Verified at 390px in Playwright, build passes, PWA icons generated
-- [ ] Deploy (Vercel or GitHub Pages) for recording
+- [x] Deploy to GitHub Pages (https://ahammadshawki8.github.io/Aalapon/)
 - [ ] Real device check (Android Chrome install, iOS Safari add to home screen)
 
 ### Tier 1 - Backend foundation
@@ -371,7 +372,8 @@ Commands: `npm install`, `npm run dev`, `npm run build`, `npm run preview`.
 - 2026-09-30 (v2): UI redesign pass: new brand mark and app icons, hand-drawn avatar, compact grouped layouts, labelled bottom nav, sparklines, timeline, accordion insights. Duplicate requests are deduped by title.
 - 2026-09-30 (v3): Landing page rebuilt as an animated hero stage that shows the whole product loop in one screen.
 - 2026-09-30 (v4): All buttons wired to real frontend flows. New pages: /care/call, /care/voice-note, /care/book-doctor, /elder/requests, /elder/watch. Care plan fully editable. Elder need screen has a voice listening flow. Call screen has working mute, speaker, and camera preview. State key is `aalapon-demo-v3`.
-- Next: deploy, real-device check, then Tier 1.
+- 2026-09-30 (v5): Deployed to GitHub Pages via Actions. Repo is public.
+- Next: real-device check (Android install, iOS add to home screen), then Tier 1.
 
 ## 14. Session log
 

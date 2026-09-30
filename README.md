@@ -2,6 +2,8 @@
 
 **Every conversation is a chance to care.**
 
+**Live demo: [ahammadshawki8.github.io/Aalapon](https://ahammadshawki8.github.io/Aalapon/)** (best on a phone, or in your browser's mobile view)
+
 Aalapon is an AI companion that calls elderly parents every day in Bangla, listens, remembers, and turns what they say into help. It works over a normal phone call, so even a button phone is enough. Families get short wellbeing updates and approve actions from their own app.
 
 Built for Grameenphone FutureMakers 2026, theme "AI for Social Good", category Healthcare & Mental Wellbeing.
@@ -42,14 +44,27 @@ Elderly parents in Bangladesh increasingly live alone while their children work 
 
 ## Demo
 
-This repository currently contains the **demo frontend** (Tier 0). It runs on mock data, with no backend yet.
+**Live:** https://ahammadshawki8.github.io/Aalapon/
 
-- `#/` - landing page
-- `#/elder` - elder app
-- `#/elder/call?mode=incoming` - an incoming AI call with a scripted Bangla conversation (tap the caption to skip ahead)
-- `#/care` - family app
+This repository contains the **demo frontend** (Tier 0). It runs entirely in the browser on demo data, with no backend yet. Every button leads to a working flow.
 
-Requests made in the elder app, or during the call, show up in the family app's Requests screen. This also works across two browser tabs. "Reset demo data" is at the bottom of the Requests screen.
+| Link | What you see |
+|---|---|
+| [Landing](https://ahammadshawki8.github.io/Aalapon/) | The product loop in one animated screen, and a choice between the two apps |
+| [Elder app](https://ahammadshawki8.github.io/Aalapon/#/elder) | Ma's home in Bangla: call button, needs, medicines, voice messages, watch, requests |
+| [Incoming AI call](https://ahammadshawki8.github.io/Aalapon/#/elder/call?mode=incoming) | A scripted Bangla conversation with live captions (tap the caption to skip ahead) |
+| [Family app](https://ahammadshawki8.github.io/Aalapon/#/care) | Ma's day: wellbeing, insights, approvals, watch health, timeline |
+| [Care plan](https://ahammadshawki8.github.io/Aalapon/#/care/settings) | Edit call time, questions, medicines, consent and family |
+
+Things to try:
+
+- Finish the AI call, then open the family app's Requests: the grocery order and the medicine refill approval are there.
+- Record a voice note in the family app, then open the elder app and play it. The family app then shows "Ma listened".
+- Add a medicine in the Care plan and see it appear in Ma's app.
+- In Agents, set Medicine refill to "Runs on its own", then ask for medicine in the elder app: it completes without approval.
+- On a phone, use "Add to Home Screen" to install it as an app. It also works offline.
+
+Demo data is saved in your browser only. "Reset demo data" is at the bottom of the Requests screen.
 
 ## Tech
 
@@ -69,6 +84,8 @@ npm run dev      # development server
 npm run build    # production build with service worker
 npm run preview  # serve the production build
 ```
+
+Every push to `main` builds and deploys to GitHub Pages through `.github/workflows/deploy.yml`.
 
 ## Project docs
 
